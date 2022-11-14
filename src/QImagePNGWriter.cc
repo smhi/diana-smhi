@@ -30,6 +30,7 @@
 #include "QImagePNGWriter.h"
 
 #include <QIODevice>
+#include <QFile>
 #include <QImage>
 
 #include <png.h>
@@ -60,8 +61,12 @@ static void QImagePNGWriter_write(png_structp png_ptr, png_bytep data, png_size_
   }
 }
 
-static void QImagePNGWriter_flush(png_structp /*png_ptr*/)
+static void QImagePNGWriter_flush(png_structp png_ptr)
 {
+    QImagePNGWriter* w = (QImagePNGWriter*)png_get_io_ptr(png_ptr);
+    QFile* device = (QFile*)w->device();
+
+    device->flush();
 }
 } // extern "C"
 
