@@ -34,6 +34,7 @@
 
 #include <puTools/miStringFunctions.h>
 #include <istream>
+#include <iostream>
 
 LogFileIO::Section::Section(const std::string& title)
   : mTitle(title)
@@ -89,9 +90,11 @@ void LogFileIO::write(std::ostream& out)
   for (Section_v::iterator it = mSections.begin(); it != mSections.end(); ++it) {
     const std::string title = converter->convert(it->title());
     out << '[' << title << ']' << std::endl;
-    for (size_t i=0; i<it->size(); ++i)
+    for (size_t i=0; i<it->size(); ++i) {
       out << converter->convert(it->at(i)) << std::endl;
+    }
     out << "[/" << title << ']' << std::endl;
+    out.flush();
   }
 }
 
