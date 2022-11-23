@@ -54,7 +54,7 @@ EditObjects::EditObjects()
   //undo variables
   undoCurrent = new UndoFront( );
   undoHead = undoCurrent;
-  undoTemp=0;
+  undoTemp=nullptr;
 
   init();
 }
