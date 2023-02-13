@@ -72,12 +72,12 @@
 using namespace miutil;
 
 Controller::Controller()
-    : plotm(0)
+    : plotm(nullptr)
     , fieldplotm(new FieldPlotManager())
-    , obsm(0)
-    , satm(0)
-    , objm(0)
-    , editm(0)
+    , obsm(nullptr)
+    , satm(nullptr)
+    , objm(nullptr)
+    , editm(nullptr)
     , editoverride(false)
 {
   METLIBS_LOG_SCOPE();

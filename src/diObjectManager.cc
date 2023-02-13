@@ -66,7 +66,7 @@ ObjectManager::ObjectManager(PlotModule* pl)
   doCombine = false;
   objectsSaved= true;
   objectsChanged = false;
-  undoTemp = 0;
+  undoTemp = nullptr;
 }
 
 ObjectManager::~ObjectManager()
