@@ -269,6 +269,24 @@ void Sat::setCalibration()
       calibrationTable[1]=ct;
       cal_channels.push_back(ct.channel);
 
+  } else if (plotChannels == "CTTH") {
+      table_cal ct;
+      ct.channel = start + "Height (" + plotChannels + "):";
+      ct.a= AIr;
+      ct.b= BIr;
+      // Set in map 1, 0 is the image
+      calibrationTable[1]=ct;
+      cal_channels.push_back(ct.channel);
+
+  } else if (plotChannels == "CTTH_HFT") {
+      table_cal ct;
+      ct.channel = start + "Height_hft (" + plotChannels + "):";
+      ct.a= (AIr*3.2808)/100.0;
+      ct.b= BIr;
+      // Set in map 1, 0 is the image
+      calibrationTable[1]=ct;
+      cal_channels.push_back(ct.channel);
+
     }
 
     METLIBS_LOG_DEBUG(LOGVAL(vch.size()));

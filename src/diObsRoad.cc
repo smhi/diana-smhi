@@ -685,6 +685,8 @@ void ObsRoad::decodeHeader()
       asciiColumn["image"] = i;
     else if (cn_lower == "name" || ct == "id")
       asciiColumn["Name"] = i;
+    else if (cn_lower == "stationname" && ct == "s")
+      asciiColumn["StationName"] = i;
 
     if (ct_lower == "ffk" || cn_lower == "ffk")
       knots = true;

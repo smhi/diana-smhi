@@ -48,8 +48,7 @@ using namespace miutil;
 
 namespace {
 
-bool calculateGeogridParameters(const Projection& p, const Rectangle& maprect, float & lonmin,
-    float & lonmax, float & latmin, float & latmax)
+bool calculateGeogridParameters(const Projection& p, const Rectangle& maprect, float& lonmin, float& lonmax, float& latmin, float& latmax)
 {
   if (!p.adjustedLatLonBoundingBox(maprect, lonmin, lonmax, latmin, latmax))
     return false;
@@ -69,21 +68,21 @@ bool calculateGeogridParameters(const Projection& p, const Rectangle& maprect, f
 std::map<std::string, FilledMap> MapPlot::filledmapObjects;
 std::map<std::string, int> MapPlot::filledmapRefCounts;
 
-std::map<std::string,ShapeObject> MapPlot::shapemaps;
-std::map<std::string,Area> MapPlot::shapeareas;
+std::map<std::string, ShapeObject> MapPlot::shapemaps;
+std::map<std::string, Area> MapPlot::shapeareas;
 
 MapPlot::MapPlot()
-  : mapchanged(true)
-  , haspanned(false)
-  , mCanvas(0)
+    : mapchanged(true)
+    , haspanned(false)
+    , mCanvas(0)
 {
   METLIBS_LOG_SCOPE();
-  drawlist[0]=0;
-  drawlist[1]=0;
-  drawlist[2]=0;
-  isactive[0]= false;
-  isactive[1]= false;
-  isactive[2]= false;
+  drawlist[0] = 0;
+  drawlist[1] = 0;
+  drawlist[2] = 0;
+  isactive[0] = false;
+  isactive[1] = false;
+  isactive[2] = false;
 }
 
 MapPlot::~MapPlot()
@@ -95,7 +94,7 @@ MapPlot::~MapPlot()
 void MapPlot::setCanvas(DiCanvas* c)
 {
   if (mCanvas && mCanvas->supportsDrawLists()) {
-    for (int i=0; i<3; ++i) {
+    for (int i = 0; i < 3; ++i) {
       if (mCanvas->IsList(drawlist[i]))
         mCanvas->DeleteLists(drawlist[i], 1);
       drawlist[i] = 0;
@@ -131,7 +130,7 @@ bool MapPlot::prepare(const PlotCommand_cp& pc, bool ifequal)
     }
   }
 
-  bool equal= (tmpinfo.name == mapinfo.name);
+  bool equal = (tmpinfo.name == mapinfo.name);
 
   if (ifequal && !equal) // check if essential mapinfo remains the same
     return false;
@@ -140,10 +139,10 @@ bool MapPlot::prepare(const PlotCommand_cp& pc, bool ifequal)
   referenceFilledMaps(tmpinfo);
   dereferenceFilledMaps(mapinfo);
 
-  mapinfo= tmpinfo;
+  mapinfo = tmpinfo;
 
   if (!bgcolourname_.empty() && cmd->size() == 1) {
-    //just background colour, no map. No reason to make MapPlot object
+    // just background colour, no map. No reason to make MapPlot object
     return false;
   }
 
@@ -153,14 +152,12 @@ bool MapPlot::prepare(const PlotCommand_cp& pc, bool ifequal)
 
   // set active zorder layer
   for (int i = 0; i < 3; i++) {
-    isactive[i] = ((mapinfo.contour.ison && mapinfo.contour.zorder == i)
-        || (mapinfo.land.ison && mapinfo.land.zorder == i)
-        || (mapinfo.lon.ison && mapinfo.lon.zorder == i)
-        || (mapinfo.lat.ison && mapinfo.lat.zorder == i)
-        || (mapinfo.frame.ison && mapinfo.frame.zorder == i));
+    isactive[i] =
+        ((mapinfo.contour.ison && mapinfo.contour.zorder == i) || (mapinfo.land.ison && mapinfo.land.zorder == i) ||
+         (mapinfo.lon.ison && mapinfo.lon.zorder == i) || (mapinfo.lat.ison && mapinfo.lat.zorder == i) || (mapinfo.frame.ison && mapinfo.frame.zorder == i));
   }
 
-  mapchanged= true;
+  mapchanged = true;
 
   return true;
 }
@@ -172,7 +169,7 @@ void MapPlot::referenceFilledMaps(const MapInfo& mi)
   if (mi.type != "triangles")
     return;
 
-  for (size_t i=0; i<mi.mapfiles.size(); i++) {
+  for (size_t i = 0; i < mi.mapfiles.size(); i++) {
     const std::string& fn = mi.mapfiles[i].fname;
     METLIBS_LOG_DEBUG(LOGVAL(fn));
     fmRefCounts_t::iterator it = filledmapRefCounts.find(fn);
@@ -194,7 +191,7 @@ void MapPlot::dereferenceFilledMaps(const MapInfo& mi)
   if (mi.type != "triangles")
     return;
 
-  for (size_t i=0; i<mi.mapfiles.size(); i++) {
+  for (size_t i = 0; i < mi.mapfiles.size(); i++) {
     const std::string& fn = mi.mapfiles[i].fname;
     METLIBS_LOG_DEBUG(LOGVAL(fn));
     fmRefCounts_t::iterator it = filledmapRefCounts.find(fn);
@@ -222,8 +219,7 @@ FilledMap* MapPlot::fetchFilledMap(const std::string& filename)
 
 #if 1 || defined(DEBUG_FETCHFILLEDMAP)
   if (filledmapRefCounts.find(filename) == filledmapRefCounts.end()) {
-    METLIBS_LOG_ERROR("refusing to access filled map file '" << filename
-        << "' wich has not been referenced");
+    METLIBS_LOG_ERROR("refusing to access filled map file '" << filename << "' wich has not been referenced");
     return 0;
   }
 #endif
@@ -261,12 +257,12 @@ void MapPlot::plot(DiGLPainter* gl, PlotOrder porder)
   if (getStaticPlot()->isPanning()) {
     haspanned = true;
   } else if (haspanned) {
-    mapchanged= true;
-    haspanned= false;
+    mapchanged = true;
+    haspanned = false;
   }
 
   if (!mapinfo.name.empty())
-    plotMap(gl,zorder);
+    plotMap(gl, zorder);
 
   // plot latlon
   bool plot_lon = mapinfo.lon.ison && mapinfo.lon.zorder == zorder;
@@ -281,7 +277,7 @@ void MapPlot::plot(DiGLPainter* gl, PlotOrder porder)
 
   // plot frame
   bool frameok = getStaticPlot()->getRequestedarea().P().isDefined();
-  if (frameok && mapinfo.frame.ison && mapinfo.frame.zorder==zorder) {
+  if (frameok && mapinfo.frame.ison && mapinfo.frame.zorder == zorder) {
     //    METLIBS_LOG_DEBUG("Plotting frame for layer:" << zorder);
     const Rectangle& reqr = getStaticPlot()->getRequestedarea().R();
     const Colour& c = getStaticPlot()->notBackgroundColour(ffopts.linecolour);
@@ -294,15 +290,15 @@ void MapPlot::plot(DiGLPainter* gl, PlotOrder porder)
 
 void MapPlot::plotMap(DiGLPainter* gl, int zorder)
 {
-  bool makenew= false;
-  bool makelist= false;
+  bool makenew = false;
+  bool makelist = false;
 
   if (!mCanvas || !mCanvas->supportsDrawLists()) {
     // do not use display lists: always make a new plot from scratch
     makenew = true;
   } else if (mapchanged || !mCanvas->IsList(drawlist[zorder])) {
     // Making new map drawlist for this zorder
-    makelist=true;
+    makelist = true;
     if (mCanvas->IsList(drawlist[zorder]))
       mCanvas->DeleteLists(drawlist[zorder], 1);
     drawlist[zorder] = mCanvas->GenLists(1);
@@ -313,11 +309,11 @@ void MapPlot::plotMap(DiGLPainter* gl, int zorder)
       makelist = false;
     }
 
-    makenew= true;
+    makenew = true;
 
     if (mapchanged) {
-      if ((zorder==2) || (zorder==1 && !isactive[2]) || (zorder==0 && !isactive[1] && !isactive[2]))
-        mapchanged= false;
+      if ((zorder == 2) || (zorder == 1 && !isactive[2]) || (zorder == 0 && !isactive[1] && !isactive[2]))
+        mapchanged = false;
     }
     // make new plot anyway during panning
   }
@@ -326,40 +322,40 @@ void MapPlot::plotMap(DiGLPainter* gl, int zorder)
   if (makenew) {
     std::string mapfile;
     // diagonal in pixels
-    const float physdiag= getStaticPlot()->getPhysDiagonal();
+    const float physdiag = getStaticPlot()->getPhysDiagonal();
     // map resolution i km/pixel
-    float mapres= (physdiag > 0 ? getStaticPlot()->getGcd()/(physdiag*1000) : 0);
+    float mapres = (physdiag > 0 ? getStaticPlot()->getGcd() / (physdiag * 1000) : 0);
 
     // find correct mapfile
-    size_t n= mapinfo.mapfiles.size();
-    if (n==1) {
-      mapfile= mapinfo.mapfiles[0].fname;
-    } else if (n>1) {
-      size_t fnum= 0;
-      for (; fnum<n; fnum++) {
+    size_t n = mapinfo.mapfiles.size();
+    if (n == 1) {
+      mapfile = mapinfo.mapfiles[0].fname;
+    } else if (n > 1) {
+      size_t fnum = 0;
+      for (; fnum < n; fnum++) {
         if (mapres > mapinfo.mapfiles[fnum].sizelimit)
           break;
       }
-      if (fnum==n)
-        fnum=n-1;
-      mapfile= mapinfo.mapfiles[fnum].fname;
+      if (fnum == n)
+        fnum = n - 1;
+      mapfile = mapinfo.mapfiles[fnum].fname;
     }
 
     const Colour& c = getStaticPlot()->notBackgroundColour(contopts.linecolour);
 
-    //Plot map
-    if (mapinfo.type=="normal" || mapinfo.type=="pland") {
+    // Plot map
+    if (mapinfo.type == "normal" || mapinfo.type == "pland") {
       // check contours
-      if (mapinfo.contour.ison && mapinfo.contour.zorder==zorder) {
+      if (mapinfo.contour.ison && mapinfo.contour.zorder == zorder) {
         const Rectangle& ms = getStaticPlot()->getMapSize();
-        const float xylim[4]= { ms.x1, ms.x2, ms.y1, ms.y2 };
+        const float xylim[4] = {ms.x1, ms.x2, ms.y1, ms.y2};
         if (!plotMapLand4(gl, mapfile, xylim, contopts.linetype, contopts.linewidth, c))
           METLIBS_LOG_ERROR("ERROR OPEN/READ " << mapfile);
       }
 
-    } else if (mapinfo.type=="triangles") {
-      bool land= mapinfo.land.ison && mapinfo.land.zorder==zorder;
-      bool cont= mapinfo.contour.ison && mapinfo.contour.zorder==zorder;
+    } else if (mapinfo.type == "triangles") {
+      bool land = mapinfo.land.ison && mapinfo.land.zorder == zorder;
+      bool cont = mapinfo.contour.ison && mapinfo.contour.zorder == zorder;
 
       if (land || cont) {
         if (FilledMap* fm = fetchFilledMap(mapfile)) {
@@ -369,18 +365,17 @@ void MapPlot::plotMap(DiGLPainter* gl, int zorder)
         }
       }
 
-    } else if (mapinfo.type=="lines_simple_text") {
+    } else if (mapinfo.type == "lines_simple_text") {
       // check contours
-      if (mapinfo.contour.ison && mapinfo.contour.zorder==zorder) {
+      if (mapinfo.contour.ison && mapinfo.contour.zorder == zorder) {
         if (!plotLinesSimpleText(gl, mapfile))
           METLIBS_LOG_ERROR("ERROR OPEN/READ " << mapfile);
       }
 
-    } else if (mapinfo.type=="shape") {
-      METLIBS_LOG_DEBUG(LOGVAL(mapinfo.land.ison) << LOGVAL(mapinfo.land.zorder)
-          << LOGVAL(mapinfo.contour.ison) << LOGVAL(mapinfo.contour.zorder));
-      const bool land= mapinfo.land.ison && mapinfo.land.zorder==zorder;
-      const bool cont= mapinfo.contour.ison && mapinfo.contour.zorder==zorder;
+    } else if (mapinfo.type == "shape") {
+      METLIBS_LOG_DEBUG(LOGVAL(mapinfo.land.ison) << LOGVAL(mapinfo.land.zorder) << LOGVAL(mapinfo.contour.ison) << LOGVAL(mapinfo.contour.zorder));
+      const bool land = mapinfo.land.ison && mapinfo.land.zorder == zorder;
+      const bool cont = mapinfo.contour.ison && mapinfo.contour.zorder == zorder;
 
       if (shapemaps.count(mapfile) == 0) {
         METLIBS_LOG_DEBUG("Creating new shapeObject for map: " << mapfile);
@@ -398,13 +393,10 @@ void MapPlot::plotMap(DiGLPainter* gl, int zorder)
       }
       METLIBS_LOG_DEBUG("shape plot");
       const Area fullarea(getStaticPlot()->getMapArea().P(), getStaticPlot()->getPlotSize());
-      shapemaps[mapfile].plot(gl, fullarea, getStaticPlot()->getGcd(), land, cont,
-          mapinfo.special, mapinfo.symbol,
-          contopts.linetype, contopts.linewidth, contopts.linecolour,
-          landopts.fillcolour, getStaticPlot()->getBackgroundColour());
+      shapemaps[mapfile].plot(gl, fullarea, getStaticPlot()->getGcd(), land, cont, mapinfo.special, mapinfo.symbol, contopts.linetype, contopts.linewidth,
+                              contopts.linecolour, landopts.fillcolour, getStaticPlot()->getBackgroundColour());
     } else {
-      METLIBS_LOG_WARN("Unknown maptype for map " << mapinfo.name << " = "
-          << mapinfo.type);
+      METLIBS_LOG_WARN("Unknown maptype for map " << mapinfo.name << " = " << mapinfo.type);
     }
 
     if (makelist)
@@ -415,11 +407,9 @@ void MapPlot::plotMap(DiGLPainter* gl, int zorder)
     if (mCanvas->IsList(drawlist[zorder]))
       gl->CallList(drawlist[zorder]);
   }
-
 }
 
-bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const float xylim[],
-    const Linetype& linetype, float linewidth, const Colour& colour)
+bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const float xylim[], const Linetype& linetype, float linewidth, const Colour& colour)
 {
   //
   //       plot land.  data from 'standard' file, type 4.
@@ -516,7 +506,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
   // colour, linetype and -width
   gl->setLineStyle(colour, linewidth, linetype);
 
-  FILE *pfile;
+  FILE* pfile;
   long offset;
 
   if ((pfile = fopen(filename.c_str(), "rb")) == NULL)
@@ -629,7 +619,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
         np += npi;
 
         if ((npp == npos || (unsigned int)np == maxpos) && np > 1) {
-          if (illegal_southpole || illegal_northpole){
+          if (illegal_southpole || illegal_northpole) {
             /*
           if (gridtype == 5 || gridtype == 6) {
             // mercator/lambert, avoid latitudes +90 and -90
@@ -644,11 +634,11 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
           x1 = x[np - 1];
           y1 = y[np - 1];
           // convert coordinates from longitude,latitude to x,y
-          if (!projection.convertFromGeographic(np,x,y)) {
+          if (!projection.convertFromGeographic(np, x, y)) {
             METLIBS_LOG_WARN("plotMapLand4(0), getPoints returned false");
           }
 
-          clipPrimitiveLines(gl, np,x,y,xylim,jumplimit);
+          clipPrimitiveLines(gl, np, x, y, xylim, jumplimit);
           x[0] = x1;
           y[0] = y1;
           np = 1;
@@ -707,7 +697,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
       }
     }
     nn = n;
-    if (!projection.convertToGeographic(nn,x,y)) {
+    if (!projection.convertToGeographic(nn, x, y)) {
       METLIBS_LOG_WARN("plotMapLand4(1), getPoints returned false");
     }
     glonmin = glonmax = x[0];
@@ -727,7 +717,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
     glatmin -= 1.;
     glatmax += 1.;
 
-    //projection.adjustGeographicExtension(glonmin,glonmax,glatmin,glatmax);
+    // projection.adjustGeographicExtension(glonmin,glonmax,glatmin,glatmax);
 
     for (n1 = 0; n1 < nlevel1; ++n1) {
 
@@ -843,7 +833,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
                 np += npi;
 
                 if ((npp == npos || (unsigned int)np == maxpos) && np > 1) {
-                  if (illegal_southpole || illegal_northpole){
+                  if (illegal_southpole || illegal_northpole) {
                     for (i = 0; i < np; ++i) {
                       if (illegal_northpole && y[i] > +89.95)
                         y[i] = +89.95;
@@ -854,7 +844,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
                   x1 = x[np - 1];
                   y1 = y[np - 1];
                   // convert coordinates from longitude,latitude to x,y
-                  if (!projection.convertFromGeographic(np,x,y)) {
+                  if (!projection.convertFromGeographic(np, x, y)) {
                     METLIBS_LOG_WARN("plotMapLand4(2), getPoints returned false");
                   }
                   clipPrimitiveLines(gl, np, x, y, xylim, jumplimit);
@@ -877,12 +867,105 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
   return true;
 }
 
+bool MapPlot::shouldPlotLongitudes(bool plot_lon, int ilon1, int ilon2)
+{
+  return plot_lon && ilon1 <= ilon2;
+}
 
+void MapPlot::plotLongitudes(DiGLPainter* gl, float& latitudeStep, int& ilat2, int& ilat1, float& glat1, float& glat2, float& latmin, float& latmax,
+                             float& glat, const int& ilon1, const int& ilon2, float& glon, float& longitudeStep,
+                             const std::shared_ptr<const Transformation>& t_geo2map, bool& lon_values, const float& jumplimit,
+                             diutil::MapValuePosition& lon_valuepos, float& lon_fontsize, int& n, int& plotResolution, bool& geo2xyError)
+{
+  METLIBS_LOG_TIME();
+  const Colour& c = getStaticPlot()->notBackgroundColour(lonopts.linecolour);
+  gl->setLineStyle(c, lonopts.linewidth, lonopts.linetype);
+
+  // curved longitude lines
+
+  float dlat = latitudeStep / float(plotResolution);
+  int n1 = std::ceil((latmin - glat1) / dlat);
+  int n2 = std::ceil((glat2 - latmax) / dlat);
+
+  int nlat = (ilat2 - ilat1) * plotResolution + 1 + n1 + n2;
+
+  glat = glat1 - dlat * float(n1);
+  if (nlat < 2) {
+    METLIBS_LOG_ERROR("** MapPlot::plotGeoGrid ERROR in Curved longitude lines, nlat=" << nlat);
+  } else {
+    std::unique_ptr<float[]> x(new float[nlat]);
+    std::unique_ptr<float[]> y(new float[nlat]);
+    for (int ilon = ilon1; ilon <= ilon2; ilon++) {
+      glon = longitudeStep * float(ilon);
+      std::ostringstream ost;
+      ost << fabsf(glon) << " " << (glon < 0 ? "W" : "E");
+      std::string plotstr = ost.str();
+
+      for (n = 0; n < nlat; n++) {
+        x[n] = glon;
+        y[n] = glat + dlat * float(n);
+      }
+
+      if (t_geo2map->forward(nlat, x.get(), y.get())) {
+        const Rectangle& ms = getStaticPlot()->getMapSize();
+        std::array<float, 4> xylim = {ms.x1, ms.x2, ms.y1, ms.y2};
+        clipPrimitiveLines(gl, nlat, x.get(), y.get(), xylim.data(), jumplimit, lon_values, lon_valuepos, plotstr);
+      } else {
+        geo2xyError = true;
+      }
+    }
+  }
+}
+
+bool MapPlot::shouldPlotLatitudes(bool plot_lat, int ilat1, int ilat2)
+{
+  return plot_lat && ilat1 <= ilat2;
+}
+
+void MapPlot::plotLatitudes(DiGLPainter* gl, float& latitudeStep, int& ilon1, int& ilon2, float& glon1, float& glon2, float& lonmin, float& lonmax, float& glat,
+                            int& ilat2, int& ilat1, float& glon, float& longitudeStep, const std::shared_ptr<const Transformation>& t_geo2map, bool& lat_values,
+                            const float& jumplimit, diutil::MapValuePosition& lat_valuepos, float& lon_fontsize, int& n, int& plotResolution, bool& geo2xyError)
+{
+  METLIBS_LOG_TIME();
+  const Colour& c = getStaticPlot()->notBackgroundColour(latopts.linecolour);
+  gl->setLineStyle(c, latopts.linewidth, latopts.linetype);
+
+  float dlon = longitudeStep / float(plotResolution);
+  int n1 = std::ceil((lonmin - glon1) / dlon);
+  int n2 = std::ceil((glon2 - lonmax) / dlon);
+
+  int nlon = (ilon2 - ilon1) * plotResolution + 1 + n1 + n2;
+  glon = glon1 - dlon * float(n1);
+  if (nlon < 1) {
+    METLIBS_LOG_ERROR("** MapPlot::plotGeoGrid ERROR in Curved Latitude lines, nlon=" << nlon);
+    METLIBS_LOG_ERROR("lonmin,lonmax=" << lonmin << "," << lonmax);
+  } else {
+    std::unique_ptr<float[]> x(new float[nlon]);
+    std::unique_ptr<float[]> y(new float[nlon]);
+    for (int ilat = ilat1; ilat <= ilat2; ilat++) {
+      glat = latitudeStep * float(ilat);
+      std::ostringstream ost;
+      ost << fabsf(glat) << " " << (glat < 0 ? "S" : "N");
+      std::string plotstr = ost.str();
+      for (n = 0; n < nlon; n++) {
+        x[n] = glon + dlon * float(n);
+        y[n] = glat;
+      }
+      if (t_geo2map->forward(nlon, x.get(), y.get())) {
+        const Rectangle& ms = getStaticPlot()->getMapSize();
+        std::array<float, 4> xylim = {ms.x1, ms.x2, ms.y1, ms.y2};
+        clipPrimitiveLines(gl, nlon, x.get(), y.get(), xylim.data(), jumplimit, lat_values, lat_valuepos, plotstr);
+      } else {
+        geo2xyError = true;
+      }
+    }
+  }
+}
 
 bool MapPlot::plotGeoGrid(DiGLPainter* gl, const MapInfo& mapinfo, bool plot_lon, bool plot_lat, int plotResolution)
 {
   float longitudeStep = mapinfo.lon.density;
-  bool lon_values     = mapinfo.lon.showvalue;
+  bool lon_values = mapinfo.lon.showvalue;
   diutil::MapValuePosition lon_valuepos = diutil::mapValuePositionFromText(mapinfo.lon.value_pos);
   float lon_fontsize = mapinfo.lon.fontsize;
 
@@ -897,204 +980,127 @@ bool MapPlot::plotGeoGrid(DiGLPainter* gl, const MapInfo& mapinfo, bool plot_lon
   << lon_valuepos << " lat_valuepos=" << lat_valuepos);
    */
 
-
   const Projection& p = getStaticPlot()->getMapArea().P();
   if (!p.isDefined()) {
     METLIBS_LOG_ERROR("MapPlot::plotGeoGrid ERROR: undefined projection");
     return false;
   }
 
-  if (latitudeStep<0.001 || longitudeStep<0.001) {
+  if (latitudeStep < 0.001 || longitudeStep < 0.001) {
     METLIBS_LOG_ERROR("MapPlot::plotGeoGrid ERROR: latitude/longitude step");
     return false;
   }
 
-  if (latitudeStep>180.)
-    latitudeStep= 180.;
-  if (longitudeStep>180.)
-    longitudeStep= 180.;
-  if (plotResolution<1)
-    plotResolution= 100;
+  if (latitudeStep > 180.)
+    latitudeStep = 180.;
+  if (longitudeStep > 180.)
+    longitudeStep = 180.;
+  if (plotResolution < 1)
+    plotResolution = 100;
 
   const float jumplimit = p.getMapLinesJumpLimit();
-  float lonmin=FLT_MAX, lonmax=-FLT_MAX, latmin=FLT_MAX, latmax=-FLT_MAX;
+  float lonmin = FLT_MAX, lonmax = -FLT_MAX, latmin = FLT_MAX, latmax = -FLT_MAX;
   if (!calculateGeogridParameters(p, getStaticPlot()->getMapSize(), lonmin, lonmax, latmin, latmax))
     return false;
 
-  int n, j;
-  int ilon1= int(lonmin/longitudeStep);
-  int ilon2= int(lonmax/longitudeStep);
-  int ilat1= int(latmin/latitudeStep);
-  int ilat2= int(latmax/latitudeStep);
-  if (lonmin>0.0)
+  int ilon1 = static_cast<int>(lonmin / longitudeStep);
+  int ilon2 = static_cast<int>(lonmax / longitudeStep);
+  int ilat1 = static_cast<int>(latmin / latitudeStep);
+  int ilat2 = static_cast<int>(latmax / latitudeStep);
+
+  if (lonmin > 0.0)
     ilon1++;
-  if (lonmax<0.0)
+  if (lonmax < 0.0)
     ilon2--;
-  if (latmin>0.0)
+  if (latmin > 0.0)
     ilat1++;
-  if (latmax<0.0)
+  if (latmax < 0.0)
     ilat2--;
 
-  float glon1= ilon1*longitudeStep;
-  float glon2= ilon2*longitudeStep;
-  float glat1= ilat1*latitudeStep;
-  float glat2= ilat2*latitudeStep;
+  float glon1 = static_cast<float>(ilon1 * longitudeStep);
+  float glon2 = static_cast<float>(ilon2 * longitudeStep);
+  float glat1 = static_cast<float>(ilat1 * latitudeStep);
+  float glat2 = static_cast<float>(ilat2 * latitudeStep);
   float glon, glat;
 
+  // ########################################################################
+  // METLIBS_LOG_DEBUG("longitudeStep,latitudeStep:  "<<longitudeStep<<" "<<latitudeStep);
+  // METLIBS_LOG_DEBUG("ilon1,ilon2,ilat1,ilat2:     "<<ilon1<<" "<<ilon2<<" "<<ilat1<<" "<<ilat2);
+  // METLIBS_LOG_DEBUG("glon1,glon2,glat1,glat2:     "<<glon1<<" "<<glon2<<" "<<glat1<<" "<<glat2);
+  // METLIBS_LOG_DEBUG("lonmin,lonmax,latmin,latmax: "<<lonmin<<" "<<lonmax<<" "<<latmin<<" "<<latmax);
+  // METLIBS_LOG_DEBUG("maprect x1,x2,y1,y2:         "<<xylim[0]<<" "<<xylim[1]<<" "<<xylim[2]<<" "<<xylim[3]);
+  // ########################################################################
 
-  //########################################################################
-  //METLIBS_LOG_DEBUG("longitudeStep,latitudeStep:  "<<longitudeStep<<" "<<latitudeStep);
-  //METLIBS_LOG_DEBUG("ilon1,ilon2,ilat1,ilat2:     "<<ilon1<<" "<<ilon2<<" "<<ilat1<<" "<<ilat2);
-  //METLIBS_LOG_DEBUG("glon1,glon2,glat1,glat2:     "<<glon1<<" "<<glon2<<" "<<glat1<<" "<<glat2);
-  //METLIBS_LOG_DEBUG("lonmin,lonmax,latmin,latmax: "<<lonmin<<" "<<lonmax<<" "<<latmin<<" "<<latmax);
-  //METLIBS_LOG_DEBUG("maprect x1,x2,y1,y2:         "<<xylim[0]<<" "<<xylim[1]<<" "<<xylim[2]<<" "<<xylim[3]);
-  //########################################################################
-
-  n= (ilat2-ilat1+1)*(ilon2-ilon1+1);
-  if (n>1200) {
-    float reduction= float(n)/1200.;
-    n= int(float(plotResolution)/reduction + 0.5);
-    if (n<2)
-      n=2;
-    //########################################################################
-    //METLIBS_LOG_DEBUG("geoGrid: plotResolution,n: "<<plotResolution<<" "<<n);
-    //########################################################################
-    if (plotResolution>n)
-      plotResolution= n;
+  int j;
+  int n = (ilat2 - ilat1 + 1) * (ilon2 - ilon1 + 1);
+  if (n > 1200) {
+    float reduction = float(n) / 1200.;
+    n = int(float(plotResolution) / reduction + 0.5);
+    if (n < 2)
+      n = 2;
+    // ########################################################################
+    // METLIBS_LOG_DEBUG("geoGrid: plotResolution,n: "<<plotResolution<<" "<<n);
+    // ########################################################################
+    if (plotResolution > n)
+      plotResolution = n;
   }
 
-  bool geo2xyError= false;
+  bool geo2xyError = false;
 
   auto t_geo2map = p.transformationFrom(Projection::geographic());
 
   // draw longitude lines.....................................
 
-  if (plot_lon && ilon1<=ilon2) {
-
-    const Colour& c = getStaticPlot()->notBackgroundColour(lonopts.linecolour);
-    gl->setLineStyle(c, lonopts.linewidth, lonopts.linetype);
-
-    // curved longitude lines
-
-    float dlat = latitudeStep / float(plotResolution);
-    int nlat = (ilat2 - ilat1) * plotResolution + 1;
-    int n1 = 0, n2 = 0;
-    while (glat1 - dlat * float(n1 + 1) >= latmin)
-      n1++;
-    while (glat2 + dlat * float(n2 + 1) <= latmax)
-      n2++;
-    glat = glat1 - dlat * float(n1);
-    nlat += (n1 + n2);
-    if (nlat < 2)
-      METLIBS_LOG_ERROR("** MapPlot::plotGeoGrid ERROR in Curved longitude lines, nlat="
-      << nlat);
-    else {
-      std::unique_ptr<float[]> x(new float[nlat]);
-      std::unique_ptr<float[]> y(new float[nlat]);
-      for (int ilon = ilon1; ilon <= ilon2; ilon++) {
-        glon = longitudeStep * float(ilon);
-        std::ostringstream ost;
-        ost << fabsf(glon) << " " << (glon < 0 ? "W" : "E");
-        std::string plotstr = ost.str();
-        for (n = 0; n < nlat; n++) {
-          x[n] = glon;
-          y[n] = glat + dlat * float(n);
-        }
-        if (t_geo2map->forward(nlat, x.get(), y.get())) {
-          const Rectangle& ms = getStaticPlot()->getMapSize();
-          const float xylim[4]= { ms.x1, ms.x2, ms.y1, ms.y2 };
-          clipPrimitiveLines(gl, nlat, x.get(), y.get(), xylim, jumplimit, lon_values, lon_valuepos, plotstr);
-        } else {
-          geo2xyError = true;
-        }
-      }
-    }
+  if (shouldPlotLongitudes(plot_lon, ilon1, ilon2)) {
+    plotLongitudes(gl, latitudeStep, ilat2, ilat1, glat1, glat2, latmin, latmax, glat, ilon1, ilon2, glon, longitudeStep, t_geo2map, lon_values, jumplimit,
+                   lon_valuepos, lon_fontsize, n, plotResolution, geo2xyError);
   }
   gl->Disable(DiGLPainter::gl_LINE_STIPPLE);
 
-  if (value_annotations.size() > 0) {
+  if (!value_annotations.empty()) {
     gl->setFontSize(lon_fontsize);
     n = value_annotations.size();
     Rectangle prevr;
     for (j = 0; j < n; j++) {
       float x = value_annotations[j].x;
       float y = value_annotations[j].y;
-      if (prevr.isinside(x,y)){
+      if (prevr.isinside(x, y)) {
         continue;
       }
       gl->drawText(value_annotations[j].t, x, y, 0);
-      float w,h;
-      gl->getTextSize(value_annotations[j].t,w,h);
-      prevr = Rectangle(x,y,x+w,y+h);
+      float w, h;
+      gl->getTextSize(value_annotations[j].t, w, h);
+      prevr = Rectangle(x, y, x + w, y + h);
     }
     value_annotations.clear();
   }
 
   // draw latitude lines......................................
 
-  if (plot_lat && ilat1<=ilat2) {
-    const Colour& c = getStaticPlot()->notBackgroundColour(latopts.linecolour);
-    gl->setLineStyle(c, latopts.linewidth, latopts.linetype);
-
-    // curved latitude lines
-
-    float dlon = longitudeStep / float(plotResolution);
-    int nlon = (ilon2 - ilon1) * plotResolution + 1;
-    int n1 = 0, n2 = 0;
-    while (glon1 - dlon * float(n1 + 1) >= lonmin)
-      n1++;
-    while (glon2 + dlon * float(n2 + 1) <= lonmax)
-      n2++;
-    glon = glon1 - dlon * float(n1);
-    nlon += (n1 + n2);
-    if (nlon < 1) {
-      METLIBS_LOG_ERROR("** MapPlot::plotGeoGrid ERROR in Curved Latitude lines, nlon="
-          << nlon);
-      METLIBS_LOG_ERROR("lonmin,lonmax=" << lonmin << "," << lonmax);
-    } else {
-      std::unique_ptr<float[]> x(new float[nlon]);
-      std::unique_ptr<float[]> y(new float[nlon]);
-      for (int ilat = ilat1; ilat <= ilat2; ilat++) {
-        glat = latitudeStep * float(ilat);
-        std::ostringstream ost;
-        ost << fabsf(glat) << " " << (glat < 0 ? "S" : "N");
-        std::string plotstr = ost.str();
-        for (n = 0; n < nlon; n++) {
-          x[n] = glon + dlon * float(n);
-          y[n] = glat;
-        }
-        if (t_geo2map->forward(nlon, x.get(), y.get())) {
-          const Rectangle& ms = getStaticPlot()->getMapSize();
-          const float xylim[4]= { ms.x1, ms.x2, ms.y1, ms.y2 };
-          clipPrimitiveLines(gl, nlon, x.get(), y.get(), xylim, jumplimit, lat_values, lat_valuepos, plotstr);
-        } else {
-          geo2xyError = true;
-        }
-      }
-    }
+  if (shouldPlotLatitudes(plot_lat, ilat1, ilat2)) {
+    plotLatitudes(gl, latitudeStep, ilon1, ilon2, glon1, glon2, lonmin, lonmax, glat, ilat2, ilat1, glon, longitudeStep, t_geo2map, lat_values, jumplimit,
+                  lat_valuepos, lon_fontsize, n, plotResolution, geo2xyError);
   }
 
   gl->Disable(DiGLPainter::gl_LINE_STIPPLE);
 
-  if (value_annotations.size() > 0) {
+  if (!value_annotations.empty()) {
     gl->setFontSize(lat_fontsize);
     n = value_annotations.size();
     Rectangle prevr;
     for (j = 0; j < n; j++) {
       float x = value_annotations[j].x;
       float y = value_annotations[j].y;
-      if (prevr.isinside(x,y)){
+      if (prevr.isinside(x, y)) {
         continue;
       }
       gl->drawText(value_annotations[j].t, x, y, 0);
-      float w,h;
-      gl->getTextSize(value_annotations[j].t,w,h);
-      prevr = Rectangle(x,y,x+w,y+h);
+      float w, h;
+      gl->getTextSize(value_annotations[j].t, w, h);
+      prevr = Rectangle(x, y, x + w, y + h);
     }
     value_annotations.clear();
   }
-
-  /*  }*/
 
   if (geo2xyError) {
     METLIBS_LOG_ERROR("MapPlot::plotGeoGrid ERROR: gc.geo2xy failure(s)");
@@ -1120,68 +1126,66 @@ bool MapPlot::plotLinesSimpleText(DiGLPainter* gl, const std::string& filename)
   const Colour& c = getStaticPlot()->notBackgroundColour(contopts.linecolour);
   gl->setLineStyle(c, contopts.linewidth, contopts.linetype);
 
-  const int nmax= 2000;
+  const int nmax = 2000;
 
   float x[nmax];
   float y[nmax];
 
   std::string str;
   std::vector<std::string> coords;
-  bool endfile= false;
+  bool endfile = false;
   bool endline;
-  int nlines= 0;
-  int n= 0;
+  int nlines = 0;
+  int n = 0;
   float jumplimit = getStaticPlot()->getMapArea().P().getMapLinesJumpLimit();
 
   while (!endfile) {
 
-    endline= false;
+    endline = false;
 
-    while (!endline && n<nmax && getline(file, str)) {
-      coords= miutil::split(str, " ", true);
-      if (coords.size()>=2) {
-        y[n]= atof(coords[0].c_str()); // latitude
-        x[n]= atof(coords[1].c_str()); // longitude
-        endline= (y[n]< -90.01f || y[n]> +90.01f || x[n]<-360.01f || x[n]
-                                                                       >+360.01f);
+    while (!endline && n < nmax && getline(file, str)) {
+      coords = miutil::split(str, " ", true);
+      if (coords.size() >= 2) {
+        y[n] = atof(coords[0].c_str()); // latitude
+        x[n] = atof(coords[1].c_str()); // longitude
+        endline = (y[n] < -90.01f || y[n] > +90.01f || x[n] < -360.01f || x[n] > +360.01f);
       } else {
-        endline= true;
+        endline = true;
       }
       n++;
     }
 
     if (endline) {
       n--;
-    } else if (n<nmax) {
-      endfile= true;
+    } else if (n < nmax) {
+      endfile = true;
     }
 
-    if (n>1) {
-      float xn= x[n-1];
-      float yn= y[n-1];
+    if (n > 1) {
+      float xn = x[n - 1];
+      float yn = y[n - 1];
       if (getStaticPlot()->GeoToMap(n, x, y)) {
         clipPrimitiveLines(gl, n, x, y, xylim, jumplimit);
         nlines++;
       } else {
         METLIBS_LOG_ERROR("MapPlot::plotLinesSimpleText  gc.geo2xy ERROR");
-        endfile= true;
+        endfile = true;
       }
       if (!endline && !endfile) {
-        x[0]= xn;
-        y[0]= yn;
-        n= 1;
+        x[0] = xn;
+        y[0] = yn;
+        n = 1;
       } else {
-        n= 0;
+        n = 0;
       }
     }
-
   }
 
   file.close();
 
   gl->Disable(DiGLPainter::gl_LINE_STIPPLE);
 
-  return (nlines>0);
+  return (nlines > 0);
 }
 
 void MapPlot::clipPrimitiveLines(DiGLPainter* gl, int npos, float *x, float *y, const float xylim[4],
@@ -1190,10 +1194,7 @@ void MapPlot::clipPrimitiveLines(DiGLPainter* gl, int npos, float *x, float *y, 
   int i, n = 0;
   while (n < npos) {
     i = n++;
-    while (n < npos
-        && fabsf(x[n - 1] - x[n]) < jumplimit
-        && fabsf(y[n - 1] - y[n]) < jumplimit)
-    {
+    while (n < npos && fabsf(x[n - 1] - x[n]) < jumplimit && fabsf(y[n - 1] - y[n]) < jumplimit) {
       n++;
     }
     if (not plotanno)
