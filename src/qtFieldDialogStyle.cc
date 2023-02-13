@@ -999,11 +999,12 @@ void FieldDialogStyle::enableWidgets(const std::string& plottype)
 {
   METLIBS_LOG_SCOPE("plottype=" << plottype);
 
-  const bool pt_contour = plottype == fpt_contour || plottype == fpt_contour2 || plottype == fpt_contour2;
+  const bool pt_contour = plottype == fpt_contour || plottype == fpt_contour1 || plottype == fpt_contour2;
   const bool pt_value_symbol = plottype == fpt_value || plottype == fpt_symbol;
   const bool pt_wind_temp_value = plottype == fpt_wind_temp_fl || plottype == fpt_wind_value;
   const bool pt_wind_vector_direction = plottype == fpt_wind || plottype == fpt_vector || plottype == fpt_direction;
   const bool pt_alpha_rgb = plottype == fpt_alpha_shade || plottype == fpt_rgb;
+  const bool pt_streamlines = plottype == fpt_streamlines;
   const bool pt_fill_cell = plottype == fpt_fill_cell;
 
   {
@@ -1020,15 +1021,16 @@ void FieldDialogStyle::enableWidgets(const std::string& plottype)
     frameCheckBox->setEnabled(enable);
     spinBaseValue1->setEnabled(enable);
 
-    undefMaskingCbox->setEnabled(enable);
-    undefColourCbox->setEnabled(enable);
-    undefLinewidthCbox->setEnabled(enable);
-    undefLinetypeCbox->setEnabled(enable);
+    const bool e_nostream = enable && !pt_streamlines;
+    undefMaskingCbox->setEnabled(e_nostream);
+    undefColourCbox->setEnabled(e_nostream);
+    undefLinewidthCbox->setEnabled(e_nostream);
+    undefLinetypeCbox->setEnabled(e_nostream);
 
-    min1SpinBox->setEnabled(enable);
-    max1SpinBox->setEnabled(enable);
+    min1SpinBox->setEnabled(e_nostream);
+    max1SpinBox->setEnabled(e_nostream);
     for (int i = 0; i < 3; i++) {
-      threeColourBox[i]->setEnabled(enable);
+      threeColourBox[i]->setEnabled(e_nostream);
     }
   }
   {
@@ -1053,11 +1055,11 @@ void FieldDialogStyle::enableWidgets(const std::string& plottype)
   }
   {
     const bool e_shading = pt_contour || pt_fill_cell;
-    spinLineInterval->setEnabled(e_shading);
-    tableCheckBox->setEnabled(e_shading);
+    spinLineInterval->setEnabled(e_shading || pt_streamlines);
+    tableCheckBox->setEnabled(e_shading || pt_streamlines);
     repeatCheckBox->setEnabled(e_shading);
-    shadingComboBox->setEnabled(e_shading);
-    shadingSpinBox->setEnabled(e_shading);
+    shadingComboBox->setEnabled(e_shading || pt_streamlines);
+    shadingSpinBox->setEnabled(e_shading || pt_streamlines);
     shadingcoldComboBox->setEnabled(e_shading);
     shadingcoldSpinBox->setEnabled(e_shading);
     patternComboBox->setEnabled(e_shading);
@@ -1067,7 +1069,7 @@ void FieldDialogStyle::enableWidgets(const std::string& plottype)
     lineIntervalChanged(spinLineInterval->value());
   }
   {
-    const bool e_line = pt_contour || pt_wind_temp_value || pt_wind_vector_direction;
+    const bool e_line = pt_contour || pt_wind_temp_value || pt_wind_vector_direction || pt_streamlines;
     lineWidthCbox->setEnabled(e_line);
   }
   {
@@ -1225,7 +1227,7 @@ void FieldDialogStyle::vectorunitCboxActivated(int index)
 void FieldDialogStyle::lineIntervalChanged(double interval)
 {
   const std::string& plottype = getPlotType();
-  const bool e_shading = plottype == fpt_contour || plottype == fpt_fill_cell;
+  const bool e_shading = plottype == fpt_contour || plottype == fpt_contour1 || plottype == fpt_contour2 || plottype == fpt_fill_cell;
 
   interval = replaceNaN(interval, 0);
   const bool enable_linevalues = e_shading && (interval == 0);

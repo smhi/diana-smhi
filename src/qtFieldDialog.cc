@@ -929,8 +929,7 @@ bool FieldDialog::decodeCommand(FieldPlotCommand_cp cmd, const FieldPlotCommand:
     allTimeStepButton->setChecked(false);
 
   // merge with options from setup/logfile for this fieldname
-  miutil::KeyValue_v kv;
-  kv << fieldStyle->getFieldOptions(fs.name(), true) << cmd->options();
+  const auto kv = mergeSetupAndQuickMenuOptions(fieldStyle->getFieldOptions(fs.name(), true), cmd->options());
   sf.setFieldPlotOptions(kv);
 
   METLIBS_LOG_DEBUG(LOGVAL(sf.modelName) << LOGVAL(sf.fieldName) << LOGVAL(sf.level) << LOGVAL(sf.idnum));
@@ -1021,6 +1020,8 @@ void FieldDialog::copySelectedField()
   const int index = selectedFieldbox->currentRow();
   if (index < 0 || index >= (int)selectedFields.size())
     return;
+
+  updateFieldOptions();
 
   SelectedField sf = selectedFields[index]; // make a copy
   sf.hourOffset = 0;
@@ -1118,6 +1119,7 @@ void FieldDialog::moveField(int delta)
     return;
 
   std::swap(selectedFields[index], selectedFields[other]);
+  currentSelectedFieldIndex = other;
 
   const QString qindex = selectedFieldbox->item(index)->text();
   const QString qother = selectedFieldbox->item(other)->text();

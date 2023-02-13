@@ -80,6 +80,8 @@ const float RAD_TO_DEG = 180 / M_PI;
 PJ_CONTEXT* ctx = nullptr;
 void milogger_log_func(void*, int level, const char* msg)
 {
+  ::milogger::LoggerTag proj_logger(MILOGGER_CATEGORY ".proj");
+
   milogger::Severity severity;
   switch (level) {
   case PJ_LOG_ERROR:
@@ -95,9 +97,9 @@ void milogger_log_func(void*, int level, const char* msg)
     return;
   }
 
-  if (milogger::RecordPtr MILOGGER_record = MILOGGER_logger.createRecord(severity)) {
-    MILOGGER_record->stream() << msg;
-    MILOGGER_logger.submitRecord(MILOGGER_record);
+  if (auto record = proj_logger.createRecord(severity)) {
+    record->stream() << msg;
+    proj_logger.submitRecord(record);
   }
 }
 #endif // HAVE_PROJ_H
@@ -223,10 +225,11 @@ PJ_p wrap_PJ(PJ* pj)
 
 PJ_p norm_PJ(PJ_p pj)
 {
-  auto pn = wrap_PJ(proj_normalize_for_visualization(ctx, pj.get()));
-  if (!pn)
-    METLIBS_LOG_ERROR("no normalization");
-  return pn ? pn : pj;
+  if (pj) {
+    if (auto pn = wrap_PJ(proj_normalize_for_visualization(ctx, pj.get())))
+      return pn;
+  }
+  return pj;
 }
 
 PJ_p make_PJ(const std::string& def)
@@ -255,6 +258,8 @@ private:
 Proj6Transformation::Proj6Transformation(const std::string& src_def, const std::string& dst_def)
     : tf(make_PJ(src_def, dst_def))
 {
+  if (!tf)
+    METLIBS_LOG_ERROR("could not create transformation from '" << src_def << "' to '" << dst_def << "'");
 }
 
 bool Proj6Transformation::defined() const
@@ -670,6 +675,9 @@ std::ostream& operator<<(std::ostream& output, const Projection& p)
 
 Transformation_cp Projection::transformationFrom(const Projection& src) const
 {
+  if (!areDefined(src, *this))
+    return {};
+
 #if 0
   std::unique_lock<std::mutex> lock(mutex_);
 #endif
@@ -724,12 +732,12 @@ bool Projection::convertPoints(const Projection& srcProj, size_t npos, diutil::P
 bool Projection::areDefined(const Projection& srcProj, const Projection& tgtProj)
 {
   if (!srcProj.isDefined()) {
-    METLIBS_LOG_ERROR("src projPJ not initialized, definition=" << srcProj);
+    METLIBS_LOG_ERROR("src proj not initialized, definition=" << srcProj << "'");
     return false;
   }
 
   if (!tgtProj.isDefined()) {
-    METLIBS_LOG_ERROR("tgt projPJ not initialized, definition=" << tgtProj);
+    METLIBS_LOG_ERROR("tgt proj not initialized, definition='" << tgtProj << "'");
     return false;
   }
 

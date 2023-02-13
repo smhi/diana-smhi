@@ -1,7 +1,7 @@
 /*
   Diana - A Free Meteorological Visualisation Tool
 
-  Copyright (C) 2013-2022 met.no
+  Copyright (C) 2013-2023 met.no
 
   Contact information:
   Norwegian Meteorological Institute
@@ -51,30 +51,22 @@ inline bool isUndefined(float v)
   return std::isnan(v) or v >= UNDEF_VALUE or v < -UNDEF_VALUE;
 }
 
-inline bool skip_level_below0(const PlotOptions& po)
-{
-  return !po.zeroLine || po.use_linevalues() || po.use_loglinevalues();
-}
-
-inline bool skip_level_above0(const PlotOptions& po)
-{
-  return !po.zeroLine && !po.use_linevalues() && !po.use_loglinevalues();
-}
-
 // ########################################################################
 
 DianaLevelSelector::DianaLevelSelector(const PlotOptions& po, const DianaLevels& levels, int paintMode)
+    : no_lines((paintMode & DianaLines::LINES_LABELS) == 0)
+    , no_fill((paintMode & DianaLines::FILL) == 0)
+    , skip_undef_line((paintMode & DianaLines::UNDEFINED) == 0 || po.undefMasking == 0)
+    , skip_undef_fill((paintMode & DianaLines::UNDEFINED) == 0 || po.undefMasking != 1)
+    , level_min(levels.level_min())
+    , level_max(levels.level_max())
+    , have_min(level_min != DianaLevels::UNDEF_LEVEL)
+    , have_max(level_max != DianaLevels::UNDEF_LEVEL)
 {
-  no_lines = (paintMode & DianaLines::LINES_LABELS) == 0;
-  no_fill = (paintMode & DianaLines::FILL) == 0;
-  skip_undef_line = (paintMode & DianaLines::UNDEFINED) == 0 || po.undefMasking == 0;
-  skip_undef_fill = (paintMode & DianaLines::UNDEFINED) == 0 || po.undefMasking != 1;
-  skip_level_0 = skip_level_below0(po);
-  skip_level_1 = skip_level_above0(po);
-  level_min = levels.level_for_value(po.minvalue);
-  level_max = levels.level_for_value(po.maxvalue);
-  have_min = level_min != DianaLevels::UNDEF_LEVEL;
-  have_max = level_max != DianaLevels::UNDEF_LEVEL;
+  const bool line_values = po.use_linevalues() || po.use_loglinevalues();
+  skip_line_0 = line_values ? false : !po.zeroLine;
+  skip_fill_0 = !po.zeroLine || line_values;
+  skip_fill_1 = !po.zeroLine && !line_values;
 }
 
 bool DianaLevelSelector::fill(contouring::level_t li) const
@@ -86,7 +78,7 @@ bool DianaLevelSelector::fill(contouring::level_t li) const
     return false;
   if ((have_min && li < level_min) || (have_max && li >= level_max))
     return false;
-  if ((skip_level_0 && li == 0) || (skip_level_1 && li == 1))
+  if ((skip_fill_0 && li == 0) || (skip_fill_1 && li == 1))
     return false;
   return true;
 }
@@ -100,7 +92,7 @@ bool DianaLevelSelector::line(contouring::level_t li) const
     return false;
   if ((have_min && li + 1 < level_min) || (have_max && li >= level_max))
     return false;
-  if (skip_level_1 && li == 1)
+  if (skip_line_0 && li == 0)
     return false;
   return true;
 }
@@ -115,8 +107,20 @@ bool DianaLevelSelector::label(contouring::level_t li) const
 
 // ########################################################################
 
+DianaLevels::DianaLevels()
+    : min_level_(UNDEF_LEVEL)
+    , max_level_(UNDEF_LEVEL)
+{
+}
+
 DianaLevels::~DianaLevels()
 {
+}
+
+void DianaLevels::set_min_max(float min_value, float max_value)
+{
+  min_level_ = level_for_value(min_value);
+  max_level_ = level_for_value(max_value);
 }
 
 // ########################################################################
@@ -239,17 +243,40 @@ DianaLevelList10::DianaLevelList10(const std::vector<float>& levels, size_t coun
 
 //------------------------------------------------------------------------
 
+namespace {
+const contouring::level_t lim_min_def = DianaLevels::UNDEF_LEVEL + 2;
+const contouring::level_t lim_max_def = std::numeric_limits<contouring::level_t>::max();
+} // namespace
+
 DianaLevelStep::DianaLevelStep(float step, float off)
-  : mStep(step)
-  , mOff(off)
+    : mStep(step)
+    , mStepI(1 / step)
+    , mOff(off)
+    , lim_min_(lim_min_def)
+    , lim_max_(lim_max_def)
 {
+}
+
+void DianaLevelStep::set_min_max(float min_value, float max_value)
+{
+  DianaLevels::set_min_max(min_value, max_value);
+  if (level_min() != UNDEF_LEVEL)
+    lim_min_ = level_min() - 1;
+  else
+    lim_min_ = lim_min_def;
+
+  if (level_max() != UNDEF_LEVEL)
+    lim_max_ = level_max() + 1;
+  else
+    lim_max_ = lim_max_def;
 }
 
 contouring::level_t DianaLevelStep::level_for_value(float value) const
 {
   if (isUndefined(value))
     return UNDEF_LEVEL;
-  return int(std::floor((value - mOff) / mStep)) + 1;
+  const contouring::level_t lvl = int(std::floor((value - mOff) * mStepI)) + 1;
+  return miutil::constrain_value(lvl, lim_min_, lim_max_);
 }
 
 float DianaLevelStep::value_for_level(contouring::level_t level) const
@@ -644,35 +671,41 @@ void DianaGLLines::drawLabels(const QPolygonF& points, contouring::level_t li)
 
 std::shared_ptr<DianaLevels> dianaLevelsForPlotOptions(const PlotOptions& poptions, float fieldUndef)
 {
+  std::shared_ptr<DianaLevels> levels;
   if (poptions.use_linevalues()) {
-    return std::make_shared<DianaLevelList>(poptions.linevalues());
+    levels = std::make_shared<DianaLevelList>(poptions.linevalues());
   } else if (poptions.use_loglinevalues()) {
     // selected line values (the first values in rlines)
     // are drawn, the following vales drawn are the
     // previous multiplied by 10 and so on
     // (nlines=2 rlines=0.1,0.3 => 0.1,0.3,1,3,10,30,...)
     // (or the line at value=zoff)
-    return std::make_shared<DianaLevelList10>(poptions.loglinevalues(), poptions.palettecolours.size());
+    levels = std::make_shared<DianaLevelList10>(poptions.loglinevalues(), poptions.palettecolours.size());
   } else if (poptions.use_lineinterval()) {
     // equally spaced lines (value)
-    return std::make_shared<DianaLevelStep>(poptions.lineinterval, poptions.base);
+    levels = std::make_shared<DianaLevelStep>(poptions.lineinterval, poptions.base);
   } else {
     return nullptr;
   }
+  levels->set_min_max(poptions.minvalue, poptions.maxvalue);
+  return levels;
 }
 
 //! same as dianaLevelsForPlotOptions except that it uses options with "_2" at the end of the name
 std::shared_ptr<DianaLevels> dianaLevelsForPlotOptions_2(const PlotOptions& poptions, float fieldUndef)
 {
+  std::shared_ptr<DianaLevels> levels;
   if (poptions.use_linevalues_2()) {
-    return std::make_shared<DianaLevelList>(poptions.linevalues_2());
+    levels = std::make_shared<DianaLevelList>(poptions.linevalues_2());
   } else if (poptions.use_loglinevalues_2()) {
-    return std::make_shared<DianaLevelList10>(poptions.loglinevalues_2(), poptions.loglinevalues_2().size());
+    levels = std::make_shared<DianaLevelList10>(poptions.loglinevalues_2(), poptions.loglinevalues_2().size());
   } else if (poptions.use_lineinterval_2()) {
-    return std::make_shared<DianaLevelStep>(poptions.lineinterval_2, poptions.base_2);
+    levels = std::make_shared<DianaLevelStep>(poptions.lineinterval_2, poptions.base_2);
   } else {
     return nullptr;
   }
+  levels->set_min_max(poptions.minvalue_2, poptions.maxvalue_2);
+  return levels;
 }
 
 // ########################################################################

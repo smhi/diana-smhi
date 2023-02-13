@@ -1,3 +1,89 @@
+diana-3.57 (3.57.12-1) unstable; urgency=low
+
+  * suppress messages from proj
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Thu, 09 Feb 2023 08:00:08 +0100
+
+diana-3.57 (3.57.11-1) unstable; urgency=low
+
+  * add separate logger for messages from proj
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Thu, 26 Jan 2023 08:00:08 +0100
+
+diana-3.57 (3.57.10-1) unstable; urgency=low
+
+  * improve contour plot and map speed
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Tue, 17 Jan 2023 08:00:08 +0100
+
+diana-3.57 (3.57.9-1) unstable; urgency=low
+
+  * do not make black pixels transparent for geotiff sat images
+  * improve fimexio grid resolution
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Thu, 05 Jan 2023 08:00:08 +0100
+
+diana-3.57 (3.57.8-1) unstable; urgency=low
+
+  * norm_PJ must check that input is not null
+  * do not convert commandline var names to upper case
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Tue, 20 Dec 2022 08:00:08 +0100
+
+diana-3.57 (3.57.7-1) unstable; urgency=low
+
+  * bugfix FieldDialog::moveField
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Tue, 06 Dec 2022 08:00:08 +0100
+
+diana-3.57 (3.57.6-1) unstable; urgency=low
+
+  * rebuild view at end of QuickMenu::updateButton
+  * update field options from style dialog before copying
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Thu, 01 Dec 2022 08:00:08 +0100
+
+diana-3.57 (3.57.5-1) unstable; urgency=low
+
+  * accept line.interval=off
+  * merge setup and command options in bdiana
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Fri, 25 Nov 2022 08:00:08 +0100
+
+diana-3.57 (3.57.4-1) unstable; urgency=low
+
+  * contour: avoid integer overflow when checking level count
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Thu, 24 Nov 2022 08:00:08 +0100
+
+diana-3.57 (3.57.3-1) unstable; urgency=low
+
+  * field dialog: try again to solve line.interval/values conflict
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Tue, 22 Nov 2022 08:00:08 +0100
+
+diana-3.57 (3.57.2-1) unstable; urgency=low
+
+  * bugfix contour min/maxvalue_2
+  * bugfix fielddialog for contour1 / contour2
+  * quickmenus: re-enable setup options; add line.interval=0 if quickmenu contains only line.values
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Mon, 21 Nov 2022 08:00:08 +0100
+
+diana-3.57 (3.57.1-1) unstable; urgency=low
+
+  * do not use plot options from setup when loading a quickmenu
+  * streamlines: add back gui options for streamlines
+  * contour: try to solve zero.line problems
+
+ -- Alexander Bürger <alexander.buerger@met.no>  Fri, 18 Nov 2022 08:00:08 +0100
+
+diana-3.57 (3.57.0-1) unstable; urgency=low
+
+  * improve selection of matrix sets for WMTS
+
+ -- Lisbeth Bergholt <lisbethb@met.no>  Mon, 14 Nov 2022 16:53:58 +0100
+
 diana-3.57 (3.57.0~rc10-1) unstable; urgency=low
 
   * bugfix cold palette
