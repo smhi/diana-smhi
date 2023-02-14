@@ -1888,14 +1888,14 @@ herr_t metno::satimgh5::fill_head_diana(std::string inputStr, int chan)
     std::string projdef = hdf5map["projdef"];
 
     replace(projdef, "+", "");
-    replace(projdef, ",", " ");
     hdf5map["projdef"] = projdef;
 
     std::vector<std::string> proj = split(projdef, " ", true);
 
     for (unsigned int i = 0; i < proj.size(); i++) {
       std::vector<std::string> projParts = split(proj[i], "=", true);
-      hdf5map[projParts[0]] = projParts[1];
+      if (projParts.size() == 2)
+        hdf5map[projParts[0]] = projParts[1];
     }
   }
 
