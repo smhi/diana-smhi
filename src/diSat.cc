@@ -282,7 +282,7 @@ void Sat::setCalibration()
       table_cal ct;
       ct.channel = start + "Height_hft (" + plotChannels + "):";
       ct.a= (AIr*3.2808)/100.0;
-      ct.b= BIr;
+      ct.b= (BIr*3.2808)/100.0;
       // Set in map 1, 0 is the image
       calibrationTable[1]=ct;
       cal_channels.push_back(ct.channel);

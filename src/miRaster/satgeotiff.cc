@@ -185,7 +185,7 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
     std::ostringstream oss;
     oss << "T=(" << ginfo.BIr << ")+(" << ginfo.AIr << ")*C";
     ginfo.cal_ir = oss.str();
-    /*
+    
     METLIBS_LOG_DEBUG("42112" << LOGVAL(ginfo.cal_ir));
 
     image[1] = (unsigned char *) malloc(ginfo.ysize*ginfo.xsize);
@@ -224,7 +224,7 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
       for (int i=0; i < nStrips; ++i) {
         s += TIFFReadEncodedStrip(in.get(), i, image[1] + s, size/nStrips);
       }
-    }*/
+    }
   }
   METLIBS_LOG_DEBUG(LOGVAL(ginfo.projection.getProj4Definition()) << LOGVAL(size)
                     << LOGVAL(ginfo.xsize) << LOGVAL(ginfo.ysize) << LOGVAL(ginfo.zsize)
