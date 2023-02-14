@@ -535,8 +535,8 @@ void QuickMenu::fillHistoryMenus()
 {
   quickMenu qtmp;
   qtmp.type = quickMenu::QM_USER;
-
-  const std::string ins = instanceNameSuffix().toStdString();
+  // if we use processid as instancenamesuffix, we will not be able to read the history from a new diana instance
+  const std::string ins = "";
   const std::string& home = LocalSetupParser::basicValue("homedir");
 
   // history quick-menus
