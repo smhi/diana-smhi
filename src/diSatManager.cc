@@ -37,6 +37,7 @@
 #include "util/time_util.h"
 
 #include <mi_fieldcalc/math_util.h>
+#include <mi_fieldcalc/openmp_tools.h>
 
 #include <puTools/miStringFunctions.h>
 #include <puCtools/stat.h>
@@ -399,6 +400,8 @@ void SatManager::setPalette(Sat* satdata)
       colmap[k][i]= satdata->paletteInfo.cmap[k][i];
 
   //convert image from palette to RGBA
+  // FIXME, openmp
+  MIUTIL_OPENMP_PARALLEL(size, for)
   for (int j=0; j<ny; j++) {
     for (int i=0; i<nx; i++) {
       const int palette_idx = (int)satdata->rawimage[0][j * nx + i]; // raw image index
