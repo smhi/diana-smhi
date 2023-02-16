@@ -56,6 +56,8 @@
 
 #include "ImageCache.h"
 
+#include <mi_fieldcalc/openmp_tools.h>
+
 #include <puTools/miStringFunctions.h>
 
 #include <sstream>
@@ -314,6 +316,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
    */
   for (int i = 0; i < nchan; i++) {
     image[i] = new unsigned char[ginfo.xsize * ginfo.ysize];
+    MIUTIL_OPENMP_PARALLEL(ginfo.xsize*ginfo.ysize, for)
     for (unsigned int j = 0; j < ginfo.xsize * ginfo.ysize; j++) {
       image[i][j] = 0;
     }
@@ -321,6 +324,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
 
   for (int i = 0; i < nchan; i++) {
     orgimage[i] = new float[ginfo.xsize * ginfo.ysize];
+    MIUTIL_OPENMP_PARALLEL(ginfo.xsize*ginfo.ysize, for)
     for (unsigned int j = 0; j < ginfo.xsize * ginfo.ysize; j++) {
       orgimage[i][j] = -32000.0;
     }
@@ -443,8 +447,10 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
             float_data = new float*[ginfo.xsize];
             float_data[0] = new float[ginfo.xsize * ginfo.ysize];
 
-            for (unsigned int i = 1; i < ginfo.xsize; i++)
+            MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
+            for (unsigned int i = 1; i < ginfo.xsize; i++) {
               float_data[i] = float_data[0] + i * ginfo.ysize;
+            }
 
             // If channel is 4r, then co2 correct it else just read it
             if (ch4co2corr)
@@ -478,6 +484,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
               float_data_sub[0] = new float[ginfo.xsize * ginfo.ysize];
 
               // Initialize array for second channel
+              MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
               for (unsigned int i = 1; i < ginfo.xsize; i++)
                 float_data_sub[i] = float_data_sub[0] + i * ginfo.ysize;
 
@@ -530,6 +537,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
             float_data = new float*[ginfo.xsize];
             float_data[0] = new float[ginfo.xsize * ginfo.ysize];
 
+            MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
             for (unsigned int i = 1; i < ginfo.xsize; i++)
               float_data[i] = float_data[0] + i * ginfo.ysize;
 
@@ -552,6 +560,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
       float_data = new float*[ginfo.xsize];
       float_data[0] = new float[ginfo.xsize * ginfo.ysize];
 
+      MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
       for (unsigned int i = 1; i < ginfo.xsize; i++)
         float_data[i] = float_data[0] + i * ginfo.ysize;
 
@@ -1171,6 +1180,7 @@ int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::strin
   int_data = new int*[ginfo.xsize];
   int_data[0] = new int[ginfo.xsize * ginfo.ysize];
 
+  MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
   for (size_t i = 1; i < ginfo.xsize; i++)
     int_data[i] = int_data[0] + i * ginfo.ysize;
 
@@ -1178,6 +1188,7 @@ int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::strin
   H5Dread(dset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, int_data[0]);
 
   // Move the data to a float array for precision
+  MIUTIL_OPENMP_PARALLEL(ginfo.xsize*ginfo.ysize, for)
   for (size_t i = 0; i < ginfo.xsize; i++) {
     for (size_t j = 0; j < ginfo.ysize; j++) {
       float_data[i][j] = int_data[i][j];
