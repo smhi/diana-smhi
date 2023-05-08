@@ -53,16 +53,16 @@ Sat::Sat()
     , palette(false)
     , mosaic(false)
     , commonColourStretch(false)
-    , image_rgba_(0)
+    , image_rgba_(nullptr)
     , channelschanged(true)
     , rgboperchanged(true)
     , alphaoperchanged(true)
 {
   METLIBS_LOG_SCOPE();
   for (int i = 0; i < maxch; i++)
-    rawimage[i] = 0;
+    rawimage[i] = nullptr;
   for (int i = 0; i < 3; i++)
-    origimage[i] = 0;
+    origimage[i] = nullptr;
 }
 
 Sat::Sat(SatPlotCommand_cp cmd)

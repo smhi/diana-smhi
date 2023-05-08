@@ -37,13 +37,18 @@
 
 #include <map>
 
-//static values that should be set from SatManager
-namespace {
-const float defaultCut = -1;
-const int defaultAlphacut = 0;
-const int defaultAlpha = 255;
-const int defaultTimediff = 60;
-const bool defaultClasstable = false;
+/// static values that should be set from SatManager
+namespace /* anonymous */ {
+constexpr float defaultCut = -1;
+static_assert(defaultCut == -1, "SatManager, defaultCut SMHI must be equal to -1");
+constexpr int defaultAlphacut = 0;
+static_assert(defaultAlphacut == 0, "SatManager, defaultAlphacut SMHI must be equal to 0");
+constexpr int defaultAlpha = 255;
+static_assert(defaultAlpha == 255, "SatManager, defaultAlpha SMHI must be equal to 255");
+constexpr int defaultTimediff = 60;
+static_assert(defaultTimediff == 60, "SatManager, defaultTimediff SMHI must be equal to 60");
+constexpr bool defaultClasstable = false;
+static_assert(defaultClasstable == false, "SatManager, defaultClasstable SMHI must be equal to false");
 } // namespace
 
 class SatPlotCommand : public KVListPlotCommand
