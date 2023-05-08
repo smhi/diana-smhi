@@ -48,7 +48,8 @@ using namespace miutil;
 
 namespace {
 
-bool calculateGeogridParameters(const Projection& p, const Rectangle& maprect, float& lonmin, float& lonmax, float& latmin, float& latmax)
+bool calculateGeogridParameters(const Projection& p, const Rectangle& maprect, float & lonmin,
+    float & lonmax, float & latmin, float & latmax)
 {
   if (!p.adjustedLatLonBoundingBox(maprect, lonmin, lonmax, latmin, latmax))
     return false;
@@ -72,17 +73,17 @@ std::map<std::string, ShapeObject> MapPlot::shapemaps;
 std::map<std::string, Area> MapPlot::shapeareas;
 
 MapPlot::MapPlot()
-    : mapchanged(true)
-    , haspanned(false)
-    , mCanvas(0)
+  : mapchanged(true)
+  , haspanned(false)
+  , mCanvas(0)
 {
   METLIBS_LOG_SCOPE();
-  drawlist[0] = 0;
-  drawlist[1] = 0;
-  drawlist[2] = 0;
-  isactive[0] = false;
-  isactive[1] = false;
-  isactive[2] = false;
+  drawlist[0]=0;
+  drawlist[1]=0;
+  drawlist[2]=0;
+  isactive[0]= false;
+  isactive[1]= false;
+  isactive[2]= false;
 }
 
 MapPlot::~MapPlot()
@@ -130,7 +131,7 @@ bool MapPlot::prepare(const PlotCommand_cp& pc, bool ifequal)
     }
   }
 
-  bool equal = (tmpinfo.name == mapinfo.name);
+  bool equal= (tmpinfo.name == mapinfo.name);
 
   if (ifequal && !equal) // check if essential mapinfo remains the same
     return false;
@@ -152,9 +153,11 @@ bool MapPlot::prepare(const PlotCommand_cp& pc, bool ifequal)
 
   // set active zorder layer
   for (int i = 0; i < 3; i++) {
-    isactive[i] =
-        ((mapinfo.contour.ison && mapinfo.contour.zorder == i) || (mapinfo.land.ison && mapinfo.land.zorder == i) ||
-         (mapinfo.lon.ison && mapinfo.lon.zorder == i) || (mapinfo.lat.ison && mapinfo.lat.zorder == i) || (mapinfo.frame.ison && mapinfo.frame.zorder == i));
+    isactive[i] = ((mapinfo.contour.ison && mapinfo.contour.zorder == i)
+        || (mapinfo.land.ison && mapinfo.land.zorder == i)
+        || (mapinfo.lon.ison && mapinfo.lon.zorder == i)
+        || (mapinfo.lat.ison && mapinfo.lat.zorder == i)
+        || (mapinfo.frame.ison && mapinfo.frame.zorder == i));
   }
 
   mapchanged = true;
@@ -219,7 +222,8 @@ FilledMap* MapPlot::fetchFilledMap(const std::string& filename)
 
 #if 1 || defined(DEBUG_FETCHFILLEDMAP)
   if (filledmapRefCounts.find(filename) == filledmapRefCounts.end()) {
-    METLIBS_LOG_ERROR("refusing to access filled map file '" << filename << "' wich has not been referenced");
+    METLIBS_LOG_ERROR("refusing to access filled map file '" << filename
+        << "' which has not been referenced");
     return 0;
   }
 #endif
@@ -373,9 +377,10 @@ void MapPlot::plotMap(DiGLPainter* gl, int zorder)
       }
 
     } else if (mapinfo.type == "shape") {
-      METLIBS_LOG_DEBUG(LOGVAL(mapinfo.land.ison) << LOGVAL(mapinfo.land.zorder) << LOGVAL(mapinfo.contour.ison) << LOGVAL(mapinfo.contour.zorder));
-      const bool land = mapinfo.land.ison && mapinfo.land.zorder == zorder;
-      const bool cont = mapinfo.contour.ison && mapinfo.contour.zorder == zorder;
+      METLIBS_LOG_DEBUG(LOGVAL(mapinfo.land.ison) << LOGVAL(mapinfo.land.zorder)
+          << LOGVAL(mapinfo.contour.ison) << LOGVAL(mapinfo.contour.zorder));
+      const bool land= mapinfo.land.ison && mapinfo.land.zorder==zorder;
+      const bool cont= mapinfo.contour.ison && mapinfo.contour.zorder==zorder;
 
       if (shapemaps.count(mapfile) == 0) {
         METLIBS_LOG_DEBUG("Creating new shapeObject for map: " << mapfile);
@@ -393,10 +398,13 @@ void MapPlot::plotMap(DiGLPainter* gl, int zorder)
       }
       METLIBS_LOG_DEBUG("shape plot");
       const Area fullarea(getStaticPlot()->getMapArea().P(), getStaticPlot()->getPlotSize());
-      shapemaps[mapfile].plot(gl, fullarea, getStaticPlot()->getGcd(), land, cont, mapinfo.special, mapinfo.symbol, contopts.linetype, contopts.linewidth,
-                              contopts.linecolour, landopts.fillcolour, getStaticPlot()->getBackgroundColour());
+      shapemaps[mapfile].plot(gl, fullarea, getStaticPlot()->getGcd(), land, cont,
+          mapinfo.special, mapinfo.symbol,
+          contopts.linetype, contopts.linewidth, contopts.linecolour,
+          landopts.fillcolour, getStaticPlot()->getBackgroundColour());
     } else {
-      METLIBS_LOG_WARN("Unknown maptype for map " << mapinfo.name << " = " << mapinfo.type);
+      METLIBS_LOG_WARN("Unknown maptype for map " << mapinfo.name << " = "
+          << mapinfo.type);
     }
 
     if (makelist)
@@ -409,7 +417,8 @@ void MapPlot::plotMap(DiGLPainter* gl, int zorder)
   }
 }
 
-bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const float xylim[], const Linetype& linetype, float linewidth, const Colour& colour)
+bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const float xylim[],
+    const Linetype& linetype, float linewidth, const Colour& colour)
 {
   //
   //       plot land.  data from 'standard' file, type 4.
@@ -619,7 +628,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
         np += npi;
 
         if ((npp == npos || (unsigned int)np == maxpos) && np > 1) {
-          if (illegal_southpole || illegal_northpole) {
+          if (illegal_southpole || illegal_northpole){
             /*
           if (gridtype == 5 || gridtype == 6) {
             // mercator/lambert, avoid latitudes +90 and -90
@@ -717,7 +726,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
     glatmin -= 1.;
     glatmax += 1.;
 
-    // projection.adjustGeographicExtension(glonmin,glonmax,glatmin,glatmax);
+    //projection.adjustGeographicExtension(glonmin,glonmax,glatmin,glatmax);
 
     for (n1 = 0; n1 < nlevel1; ++n1) {
 
@@ -833,7 +842,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
                 np += npi;
 
                 if ((npp == npos || (unsigned int)np == maxpos) && np > 1) {
-                  if (illegal_southpole || illegal_northpole) {
+                  if (illegal_southpole || illegal_northpole){
                     for (i = 0; i < np; ++i) {
                       if (illegal_northpole && y[i] > +89.95)
                         y[i] = +89.95;
@@ -844,7 +853,7 @@ bool MapPlot::plotMapLand4(DiGLPainter* gl, const std::string& filename, const f
                   x1 = x[np - 1];
                   y1 = y[np - 1];
                   // convert coordinates from longitude,latitude to x,y
-                  if (!projection.convertFromGeographic(np, x, y)) {
+                  if (!projection.convertFromGeographic(np,x,y)) {
                     METLIBS_LOG_WARN("plotMapLand4(2), getPoints returned false");
                   }
                   clipPrimitiveLines(gl, np, x, y, xylim, jumplimit);

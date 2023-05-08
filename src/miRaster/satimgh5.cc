@@ -145,11 +145,12 @@ herr_t metno::satimgh5::getDataForChannel(std::string& inputStr, std::string& da
 
  */
 
-herr_t metno::satimgh5::getDataForChannel(std::string inputStr, int chan, std::string& chpath, std::string& chname, bool& chinvert, bool& subtract, std::string& subchpath,
-                                          std::string& subchname, bool& subchinvert, bool& ch4co2corr, bool& subch4co2corr)
+herr_t metno::satimgh5::getDataForChannel(std::string inputStr, int chan, std::string& chpath, std::string& chname, bool& chinvert, bool& subtract,
+                                          std::string& subchpath, std::string& subchname, bool& subchinvert, bool& ch4co2corr, bool& subch4co2corr)
 {
 
-  std::vector<std::string> channels, channelParts, channelSplit, channelSplitParts, channelNameParts, subChannelNameParts, nameSplit, nameSplitParts, subNameSplitParts;
+  std::vector<std::string> channels, channelParts, channelSplit, channelSplitParts, channelNameParts, subChannelNameParts, nameSplit, nameSplitParts,
+      subNameSplitParts;
 
   chinvert = false;
 
@@ -616,7 +617,7 @@ int metno::satimgh5::subtractChannels(float* float_data[], float* float_data_sub
   }
 
   /*#ifdef DEBUGPRINT
-   cerr << "Submin: " << min << " Submax: " << max << endl;
+   std::cerr << "Submin: " << min << " Submax: " << max << std::endl;
    #endif
    hdf5map[std::string("submin")] = std::string(min);
    hdf5map[std::string("submax")] = std::string(max);*/
@@ -1055,8 +1056,8 @@ int metno::satimgh5::makeImage(unsigned char* image[], float* float_data[], int 
  * The data is processed and put in the int_data[] array.
  * orgimage is filled with unprocessed data.
  */
-int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::string path, std::string name, bool invert, float** float_data, int chan, float* orgImage[],
-                                         bool cloudTopTemperature, bool haveCachedImage)
+int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::string path, std::string name, bool invert, float** float_data, int chan,
+                                         float* orgImage[], bool cloudTopTemperature, bool haveCachedImage)
 {
   METLIBS_LOG_TIME();
 
@@ -1226,7 +1227,7 @@ int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::strin
         lookupTable.push_back(color_range[i]);
     }
     /*for(int i=0;i<lookupTable.size();i++) {
-     cerr << "key: " << i<< " value: " << lookupTable[i] << endl;
+     std::cerr << "key: " << i<< " value: " << lookupTable[i] << std::endl;
      }*/
   }
 
@@ -1899,6 +1900,7 @@ herr_t metno::satimgh5::fill_head_diana(std::string inputStr, int chan)
     std::string projdef = hdf5map["projdef"];
 
     replace(projdef, "+", "");
+    //replace(projdef, ",", " ");
     hdf5map["projdef"] = projdef;
 
     std::vector<std::string> proj = split(projdef, " ", true);
@@ -1907,6 +1909,7 @@ herr_t metno::satimgh5::fill_head_diana(std::string inputStr, int chan)
       std::vector<std::string> projParts = split(proj[i], "=", true);
       if (projParts.size() == 2)
         hdf5map[projParts[0]] = projParts[1];
+      //hdf5map[projParts[0]] = projParts[1];
     }
   }
 
@@ -2058,7 +2061,7 @@ int metno::satimgh5::HDF5_head_diana(const std::string& infile, dihead& ginfo)
   std::vector<std::string> paletteInfo = split(ginfo.paletteinfo, ",", true);
   std::vector<std::string> paletteSteps;       // values in palette
   std::vector<std::string> paletteColorVector; // steps in colormap for selected colors
-                                     // This values are defined in paletteinfo from setupfile
+                                               // This values are defined in paletteinfo from setupfile
   std::vector<std::string> paletteInfoRow;
   // True if paletteinfo in setupfile contains value:color
   bool manualColors = false;
@@ -2188,7 +2191,7 @@ int metno::satimgh5::HDF5_head_diana(const std::string& infile, dihead& ginfo)
     ginfo.projection.setProj4Definition(hdf5map["projdef"]);
   } else {
     // FIXME this does not work, +units=km +x_0=.. +y_0=.. will be
-    // added below to an otherwise empty proj4 std::string
+    // added below to an otherwise empty proj4 string
     ginfo.projection = Projection();
   }
 
