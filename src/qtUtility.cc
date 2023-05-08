@@ -221,7 +221,8 @@ void installColours(QComboBox* box, const std::vector<Colour::ColourInfo>& cInfo
   }
 }
 
-QComboBox* ColourBox(QWidget* parent, const std::vector<Colour::ColourInfo>& cInfo, bool Enabled, int defItem, const std::string& firstItem, bool name)
+QComboBox* ColourBox(QWidget* parent, const std::vector<Colour::ColourInfo>& cInfo,
+    bool Enabled, int defItem, const std::string& firstItem, bool name)
 {
   QComboBox* box = new QComboBox(parent);
   if (not firstItem.empty())
@@ -288,8 +289,8 @@ void installPalette(QComboBox* box, const std::vector<ColourShading::ColourShadi
   }
 }
 
-QComboBox* PaletteBox(QWidget* parent, const std::vector<ColourShading::ColourShadingInfo>& csInfo, bool Enabled, int defItem, const std::string& firstItem,
-                      bool name)
+QComboBox* PaletteBox( QWidget* parent, const std::vector<ColourShading::ColourShadingInfo>& csInfo,
+    bool Enabled, int defItem, const std::string& firstItem, bool name)
 {
   QComboBox* box = new QComboBox( parent );
   if (not firstItem.empty())
@@ -324,7 +325,8 @@ void ExpandPaletteBox( QComboBox* box, const ColourShading& palette )
   box->addItem(qicon,qs);
 }
 
-QComboBox* PatternBox(QWidget* parent, const std::vector<Pattern::PatternInfo>& patternInfo, bool Enabled, int defItem, const std::string& firstItem, bool name)
+QComboBox* PatternBox(QWidget* parent, const std::vector<Pattern::PatternInfo>& patternInfo,
+    bool Enabled, int defItem, const std::string& firstItem, bool name)
 {
   QComboBox* box = new QComboBox( parent );
 

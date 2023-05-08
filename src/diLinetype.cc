@@ -32,8 +32,9 @@
 #include "diLinetype.h"
 #include <puTools/miStringFunctions.h>
 
-std::map<std::string, Linetype> Linetype::linetypes;
-std::vector<std::string> Linetype::linetypeSequence;
+
+std::map<std::string,Linetype> Linetype::linetypes;
+std::vector<std::string>       Linetype::linetypeSequence;
 Linetype                  Linetype::defaultLinetype;
 
 
@@ -49,7 +50,7 @@ Linetype::Linetype()
 Linetype::Linetype(const std::string& _name)
 {
   std::string ltname= miutil::to_lower(_name);
-  std::map<std::string, Linetype>::iterator p = linetypes.find(ltname);
+  std::map<std::string,Linetype>::iterator p = linetypes.find(ltname);
   if (p != linetypes.end())
     memberCopy(p->second);
   else

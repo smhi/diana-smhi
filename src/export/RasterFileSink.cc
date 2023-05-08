@@ -40,7 +40,9 @@ bool save(const QImage& image, const QString& filename, const QString format)
     QFile file(filename);
     file.open(QIODevice::WriteOnly);
     QImagePNGWriter writer(&file);
-    return writer.write(image);
+    bool result = writer.write(image);
+    file.close();
+    return result;
   } else if (!format.isEmpty()) {
     return image.save(filename, format.toStdString().c_str());
   } else {

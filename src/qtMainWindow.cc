@@ -996,7 +996,7 @@ void DianaMainWindow::recallPlot(const PlotCommand_cpv& vstr, bool replace)
   // If the strings are being replaced then update each of the
   // dialogs whether it has a command or not. Otherwise, only
   // update those with a corresponding string.
-  std::map<std::string, DataDialog*>::iterator it;
+  std::map<std::string, DataDialog *>::iterator it;
   for (it = dialogNames.begin(); it != dialogNames.end(); ++it) {
     DataDialog *dialog = it->second;
     if (replace || dialog_com.find(it->first) != dialog_com.end())
@@ -1055,7 +1055,7 @@ bool isLabelCommandWithTime(PlotCommand_cp cmd)
 }
 } // namespace
 
-void DianaMainWindow::getPlotStrings(PlotCommand_cpv& pstr, std::vector<std::string>& shortnames)
+void DianaMainWindow::getPlotStrings(PlotCommand_cpv &pstr, std::vector<std::string> &shortnames)
 {
   // fields
   pstr = fm->getOKString();
@@ -1558,7 +1558,7 @@ void DianaMainWindow::spectrumChangedSlot(const QString& station)
 {
   //METLIBS_LOG_DEBUG("DianaMainWindow::spectrumChangedSlot to " << name);
   METLIBS_LOG_DEBUG("DianaMainWindow::spectrumChangedSlot");
-  std::string s = station.toStdString();
+  std::string s =station.toStdString();
   std::vector<std::string> data;
   data.push_back(s);
   contr->stationCommand("setSelectedStation",data,"spectrum");
@@ -1878,11 +1878,36 @@ void DianaMainWindow::processLetter(int fromId, const miQMessage &qletter)
 
   else if (!handlingTimeMessage && ((command == qmstrings::settime && qletter.findCommonDesc("time") == 0) ||
                                     (command == qmstrings::timechanged && qletter.findCommonDesc("time") == 0))) {
-    const std::string l_common = qletter.getCommonValue(0).toStdString();
-    miutil::miTime t(l_common);
-    handlingTimeMessage = true;
-    timeNavigator->requestTime(t); // triggers "timeSelected" signal, connected to "setPlotTime"
-    handlingTimeMessage = false;
+    if (command == qmstrings::timechanged && qletter.findCommonDesc("time") == 0) {
+      // check if user has selected one ore more diana's to connect with
+      std::vector<ClientAction*> selectedClients = pluginB->getSelectedClientActions();
+      ClientIds ids;
+      for (auto & selectedClient : selectedClients) {
+        if (selectedClient->isConnected() && pluginB->client()->getClientType(selectedClient->id()).toStdString() == "Diana") {
+          ids.insert(selectedClient->id());
+        }
+      }
+      if (ids.empty()) return;
+      auto it = ids.begin();
+      if (ids.find(fromId)!= ids.end()) {
+        // The message comes from a selected diana instance
+        const std::string l_common = qletter.getCommonValue(0).toStdString();
+        miutil::miTime t(l_common);
+        handlingTimeMessage = true;
+        timeNavigator->requestTime(t); // triggers "timeSelected" signal, connected to "setPlotTime"
+        handlingTimeMessage = false;
+      }
+      else {
+        return;
+      }
+    }
+    else {
+      const std::string l_common = qletter.getCommonValue(0).toStdString();
+      miutil::miTime t(l_common);
+      handlingTimeMessage = true;
+      timeNavigator->requestTime(t); // triggers "timeSelected" signal, connected to "setPlotTime"
+      handlingTimeMessage = false;
+    }
   }
 
   else if (command == qmstrings::getcurrentplotcommand) {
@@ -2322,7 +2347,7 @@ void DianaMainWindow::catchElement(QMouseEvent* mev)
   showStationOrObsText(x, y);
 
   //find the name of stations clicked/pointed at
-  std::vector<std::string> stations = contr->findStations(x, y, "vprof");
+  std::vector<std::string> stations = contr->findStations(x,y,"vprof");
   //now tell vpWindow about new station (this calls vpManager)
   if (vpWindow && !stations.empty())
     vpWindow->changeStations(stations);
@@ -2491,7 +2516,9 @@ std::string DianaMainWindow::getLogFileExt()
 std::string DianaMainWindow::getLogFileName() const
 {
   // FIXME toStdString uses utf8 which might cause encoding problems
-  return getLogFileDir() + instanceName().toStdString() + getLogFileExt();
+  // If we uses processid as part of instancename, we should not create a logfile
+  // each time a new diana is created
+  return getLogFileDir() + "diana" + getLogFileExt();
 }
 
 void DianaMainWindow::writeLogFile()
@@ -2828,7 +2855,7 @@ void DianaMainWindow::readLog(const std::vector<std::string>& vstr, const std::s
 
 void DianaMainWindow::restoreDocState(const std::string& logstr)
 {
-  std::vector<std::string> vs = miutil::split(logstr, " ");
+  std::vector<std::string> vs= miutil::split(logstr, " ");
   int n=vs.size();
   QByteArray state(n-1,' ');
   for (int i=1; i<n; i++){

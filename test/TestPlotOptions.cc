@@ -37,6 +37,7 @@
 
 #include <gtest/gtest.h>
 
+
 static bool equal_vectors(const std::vector<float>& a, const std::vector<float>& b)
 {
   if (a.size() != b.size())
@@ -51,9 +52,9 @@ static bool test_autoExpandFloatVector(const std::string& text, const std::vecto
 {
   const std::vector<float> actual = PlotOptions::autoExpandFloatVector(text);
   if (not equal_vectors(actual, expected)) {
-    // std::cout << "error with '" << text << "', unexpected result ";
-    // copy(actual.begin(), actual.end(), std::ostream_iterator<float>(std::cout, ","));
-    // std::cout << " size=" << actual.size() << std::endl;
+    //std::cout << "error with '" << text << "', unexpected result ";
+    //copy(actual.begin(), actual.end(), std::ostream_iterator<float>(std::cout, ","));
+    //std::cout << " size=" << actual.size() << std::endl;
     return false;
   }
   return true;

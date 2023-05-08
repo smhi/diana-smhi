@@ -66,10 +66,11 @@ int                ComplexText::nr_colors=0;
 QColor*            ComplexText::pixcolor=0;
 
 /*********************************************/
-ComplexText::ComplexText(QWidget* parent, Controller* llctrl, std::vector<std::string>& symbolText, std::vector<std::string>& xText,
-                         std::set<std::string> cList, bool useColour)
-    : QDialog(parent)
-    , m_ctrl(llctrl)
+ComplexText::ComplexText( QWidget* parent, Controller* llctrl,
+    std::vector <std::string> & symbolText, std::vector <std::string>  & xText,
+    std::set <std::string> cList,bool useColour)
+  : QDialog(parent)
+  , m_ctrl(llctrl)
 {
   METLIBS_LOG_SCOPE();
 
@@ -97,9 +98,9 @@ ComplexText::ComplexText(QWidget* parent, Controller* llctrl, std::vector<std::s
   if (ns){
     QGridLayout* glayout = new QGridLayout();
     hglayout->addLayout(glayout, 0);
-
-    std::set<std::string> complexList = cList;
-
+    
+    std::set <std::string> complexList = cList;
+    
     for (int i=0;i<ns;i++){
       METLIBS_LOG_DEBUG("symbolText["<<i<<"]"<<symbolText[i]);
       std::string ltext="Text"+miutil::from_number(i+1);
@@ -224,7 +225,8 @@ void ComplexText::getColour(Colour::ColourInfo &colour)
     colour=colourInfo[index];
 }
 
-int ComplexText::getColourIndex(std::vector<Colour::ColourInfo>& colourInfo, Colour::ColourInfo colour)
+int ComplexText::getColourIndex(std::vector <Colour::ColourInfo> & colourInfo,
+    Colour::ColourInfo colour)
 {
   int i,index=-1;
   int nr_colors= colourInfo.size();

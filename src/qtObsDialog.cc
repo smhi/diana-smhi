@@ -327,6 +327,7 @@ PlotCommand_cpv ObsDialog::getOKString()
   return str;
 }
 
+
 std::vector<std::string> ObsDialog::writeLog()
 {
   std::vector<std::string> vstr;

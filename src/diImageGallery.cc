@@ -48,9 +48,10 @@ using namespace::miutil;
 
 //int ImageGallery::numimages= 0;
 //ImageGallery::image ImageGallery::Images[ImageGallery::maximages];
-std::map<std::string, ImageGallery::image> ImageGallery::Images;
-std::map<std::string, ImageGallery::pattern> ImageGallery::Patterns;
-std::map<int, std::vector<std::string>> ImageGallery::Type;
+std::map<std::string,ImageGallery::image> ImageGallery::Images;
+std::map<std::string,ImageGallery::pattern> ImageGallery::Patterns;
+std::map<int, std::vector<std::string> > ImageGallery::Type;
+
 
 ImageGallery::image::image()
   :alpha(true)
@@ -509,7 +510,7 @@ bool ImageGallery::readFile(const std::string& name, const std::string& filename
   std::string line;
   std::vector<std::string> vline;
 
-  inFile.open(filename.c_str(), std::ios::in);
+  inFile.open(filename.c_str(),std::ios::in);
   if (inFile.bad()) {
     METLIBS_LOG_ERROR("ImageGallery: Can't open file: " << filename);
     return false;
@@ -777,7 +778,7 @@ DiGLPainter::GLubyte* ImageGallery::getPattern(std::string name)
 
 void ImageGallery::printInfo() const
 {
-  std::map<std::string, image>::const_iterator p = Images.begin();
+  std::map<std::string,image>::const_iterator p= Images.begin();
   for( ; p!=Images.end(); p++){
     METLIBS_LOG_INFO("Image: " << p->second.name
     << " W:" << p->second.width
@@ -786,7 +787,8 @@ void ImageGallery::printInfo() const
   }
 }
 
-void ImageGallery::ImageNames(std::vector<std::string>& vnames, int type) const
+void ImageGallery::ImageNames(std::vector<std::string>& vnames,
+    int type) const
 {
   vnames = Type[type];
 }

@@ -412,7 +412,7 @@ std::string TrajectoryDialog::makePosString(const posStruct& pos) const
   std::ostringstream ost;
   ost << "numpos=" << pos.numPos;
   ost << " radius=" << pos.radius;
-  ost << std::setw(5) << std::setprecision(2) << std::setiosflags(std::ios::fixed);
+  ost << std::setw(5) << std::setprecision(2)<< std::setiosflags(std::ios::fixed);
   ost << " latitudelongitude=" << pos.lat << "," << pos.lon;
   return ost.str();
 }
@@ -429,10 +429,10 @@ void TrajectoryDialog::mapPos(float lat, float lon)
   pos.numPos=numposSpin->value();
   positionVector.push_back(pos);
 
-  //Make string and insert in posList
+  //Make std::string and insert in posList
   update_posList(lat,lon);
 
-  //Make string and send to trajectoryPlot
+  //Make std::string and send to trajectoryPlot
   std::vector<std::string> vstr;
   vstr.push_back("clear");
   vstr.push_back(makePosString(pos));
@@ -508,7 +508,8 @@ std::vector<std::string> TrajectoryDialog::writeLog()
 }
 /*********************************************/
 
-void TrajectoryDialog::readLog(const std::vector<std::string>& vstr, const std::string& thisVersion, const std::string& logVersion)
+void TrajectoryDialog::readLog(const std::vector<std::string>& vstr,
+    const std::string& thisVersion, const std::string& logVersion)
 {
   int n=0, nvstr= vstr.size();
   int radius = 0, numPos = 1;
@@ -517,7 +518,7 @@ void TrajectoryDialog::readLog(const std::vector<std::string>& vstr, const std::
 
     posStruct pos;
     bool position=false;
-    std::vector<std::string> parts = miutil::split(vstr[n], 0, " ", true);
+    std::vector<std::string> parts= miutil::split(vstr[n], 0, " ", true);
 
     int nr=parts.size();
     for (int i=0; i<nr; i++) {

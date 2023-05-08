@@ -56,6 +56,8 @@
 
 #include "ImageCache.h"
 
+#include <mi_fieldcalc/openmp_tools.h>
+
 #include <puTools/miStringFunctions.h>
 
 #include <sstream>
@@ -77,7 +79,7 @@ std::map<std::string, std::string> metno::satimgh5::metadataMap;
 std::map<int, std::string> metno::satimgh5::paletteStringMap;
 
 /*!
- TODO: Should check the metadata string and verify the format.
+ TODO: Should check the metadata std::string and verify the format.
  */
 bool metno::satimgh5::validateChannelString(std::string& inputStr)
 {
@@ -143,12 +145,11 @@ herr_t metno::satimgh5::getDataForChannel(std::string& inputStr, std::string& da
 
  */
 
-herr_t metno::satimgh5::getDataForChannel(std::string inputStr, int chan, std::string& chpath, std::string& chname, bool& chinvert, bool& subtract,
-                                          std::string& subchpath, std::string& subchname, bool& subchinvert, bool& ch4co2corr, bool& subch4co2corr)
+herr_t metno::satimgh5::getDataForChannel(std::string inputStr, int chan, std::string& chpath, std::string& chname, bool& chinvert, bool& subtract, std::string& subchpath,
+                                          std::string& subchname, bool& subchinvert, bool& ch4co2corr, bool& subch4co2corr)
 {
 
-  std::vector<std::string> channels, channelParts, channelSplit, channelSplitParts, channelNameParts, subChannelNameParts, nameSplit, nameSplitParts,
-      subNameSplitParts;
+  std::vector<std::string> channels, channelParts, channelSplit, channelSplitParts, channelNameParts, subChannelNameParts, nameSplit, nameSplitParts, subNameSplitParts;
 
   chinvert = false;
 
@@ -315,6 +316,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
    */
   for (int i = 0; i < nchan; i++) {
     image[i] = new unsigned char[ginfo.xsize * ginfo.ysize];
+    MIUTIL_OPENMP_PARALLEL(ginfo.xsize*ginfo.ysize, for)
     for (unsigned int j = 0; j < ginfo.xsize * ginfo.ysize; j++) {
       image[i][j] = 0;
     }
@@ -322,6 +324,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
 
   for (int i = 0; i < nchan; i++) {
     orgimage[i] = new float[ginfo.xsize * ginfo.ysize];
+    MIUTIL_OPENMP_PARALLEL(ginfo.xsize*ginfo.ysize, for)
     for (unsigned int j = 0; j < ginfo.xsize * ginfo.ysize; j++) {
       orgimage[i][j] = -32000.0;
     }
@@ -444,8 +447,10 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
             float_data = new float*[ginfo.xsize];
             float_data[0] = new float[ginfo.xsize * ginfo.ysize];
 
-            for (unsigned int i = 1; i < ginfo.xsize; i++)
+            MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
+            for (unsigned int i = 1; i < ginfo.xsize; i++) {
               float_data[i] = float_data[0] + i * ginfo.ysize;
+            }
 
             // If channel is 4r, then co2 correct it else just read it
             if (ch4co2corr)
@@ -479,6 +484,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
               float_data_sub[0] = new float[ginfo.xsize * ginfo.ysize];
 
               // Initialize array for second channel
+              MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
               for (unsigned int i = 1; i < ginfo.xsize; i++)
                 float_data_sub[i] = float_data_sub[0] + i * ginfo.ysize;
 
@@ -531,6 +537,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
             float_data = new float*[ginfo.xsize];
             float_data[0] = new float[ginfo.xsize * ginfo.ysize];
 
+            MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
             for (unsigned int i = 1; i < ginfo.xsize; i++)
               float_data[i] = float_data[0] + i * ginfo.ysize;
 
@@ -553,6 +560,7 @@ int metno::satimgh5::HDF5_read_diana(const std::string& infile, unsigned char* i
       float_data = new float*[ginfo.xsize];
       float_data[0] = new float[ginfo.xsize * ginfo.ysize];
 
+      MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
       for (unsigned int i = 1; i < ginfo.xsize; i++)
         float_data[i] = float_data[0] + i * ginfo.ysize;
 
@@ -608,7 +616,7 @@ int metno::satimgh5::subtractChannels(float* float_data[], float* float_data_sub
   }
 
   /*#ifdef DEBUGPRINT
-   std::cerr << "Submin: " << min << " Submax: " << max << std::endl;
+   cerr << "Submin: " << min << " Submax: " << max << endl;
    #endif
    hdf5map[std::string("submin")] = std::string(min);
    hdf5map[std::string("submax")] = std::string(max);*/
@@ -1047,8 +1055,8 @@ int metno::satimgh5::makeImage(unsigned char* image[], float* float_data[], int 
  * The data is processed and put in the int_data[] array.
  * orgimage is filled with unprocessed data.
  */
-int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::string path, std::string name, bool invert, float** float_data, int chan,
-                                         float* orgImage[], bool cloudTopTemperature, bool haveCachedImage)
+int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::string path, std::string name, bool invert, float** float_data, int chan, float* orgImage[],
+                                         bool cloudTopTemperature, bool haveCachedImage)
 {
   METLIBS_LOG_TIME();
 
@@ -1172,6 +1180,7 @@ int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::strin
   int_data = new int*[ginfo.xsize];
   int_data[0] = new int[ginfo.xsize * ginfo.ysize];
 
+  MIUTIL_OPENMP_PARALLEL(ginfo.xsize, for)
   for (size_t i = 1; i < ginfo.xsize; i++)
     int_data[i] = int_data[0] + i * ginfo.ysize;
 
@@ -1179,6 +1188,7 @@ int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::strin
   H5Dread(dset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, int_data[0]);
 
   // Move the data to a float array for precision
+  MIUTIL_OPENMP_PARALLEL(ginfo.xsize*ginfo.ysize, for)
   for (size_t i = 0; i < ginfo.xsize; i++) {
     for (size_t j = 0; j < ginfo.ysize; j++) {
       float_data[i][j] = int_data[i][j];
@@ -1216,7 +1226,7 @@ int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, std::strin
         lookupTable.push_back(color_range[i]);
     }
     /*for(int i=0;i<lookupTable.size();i++) {
-     std::cerr << "key: " << i<< " value: " << lookupTable[i] << std::endl;
+     cerr << "key: " << i<< " value: " << lookupTable[i] << endl;
      }*/
   }
 
@@ -1889,14 +1899,14 @@ herr_t metno::satimgh5::fill_head_diana(std::string inputStr, int chan)
     std::string projdef = hdf5map["projdef"];
 
     replace(projdef, "+", "");
-    replace(projdef, ",", " ");
     hdf5map["projdef"] = projdef;
 
     std::vector<std::string> proj = split(projdef, " ", true);
 
     for (unsigned int i = 0; i < proj.size(); i++) {
       std::vector<std::string> projParts = split(proj[i], "=", true);
-      hdf5map[projParts[0]] = projParts[1];
+      if (projParts.size() == 2)
+        hdf5map[projParts[0]] = projParts[1];
     }
   }
 
@@ -2048,7 +2058,7 @@ int metno::satimgh5::HDF5_head_diana(const std::string& infile, dihead& ginfo)
   std::vector<std::string> paletteInfo = split(ginfo.paletteinfo, ",", true);
   std::vector<std::string> paletteSteps;       // values in palette
   std::vector<std::string> paletteColorVector; // steps in colormap for selected colors
-                                               // This values are defined in paletteinfo from setupfile
+                                     // This values are defined in paletteinfo from setupfile
   std::vector<std::string> paletteInfoRow;
   // True if paletteinfo in setupfile contains value:color
   bool manualColors = false;
@@ -2178,7 +2188,7 @@ int metno::satimgh5::HDF5_head_diana(const std::string& infile, dihead& ginfo)
     ginfo.projection.setProj4Definition(hdf5map["projdef"]);
   } else {
     // FIXME this does not work, +units=km +x_0=.. +y_0=.. will be
-    // added below to an otherwise empty proj4 string
+    // added below to an otherwise empty proj4 std::string
     ginfo.projection = Projection();
   }
 

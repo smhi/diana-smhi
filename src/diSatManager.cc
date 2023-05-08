@@ -36,6 +36,7 @@
 #include "util/time_util.h"
 
 #include <mi_fieldcalc/math_util.h>
+#include <mi_fieldcalc/openmp_tools.h>
 
 #include <puTools/miStringFunctions.h>
 #include <puCtools/stat.h>
@@ -392,6 +393,8 @@ void SatManager::setPalette(Sat* satdata, SatFileInfo& /*fInfo*/)
       colmap[k][i]= satdata->paletteInfo.cmap[k][i];
 
   //convert image from palette to RGBA
+  // FIXME, openmp
+  MIUTIL_OPENMP_PARALLEL(size, for)
   for (int j=0; j<ny; j++) {
     for (int i=0; i<nx; i++) {
       int rawIndex = (int)satdata->rawimage[0][j*nx+i]; //raw image index
@@ -723,8 +726,8 @@ void SatManager::readHeader(SatFileInfo& file, const std::vector<std::string>& c
         miutil::replace(name, "i.", "v.");
       std::ifstream inFile(name.c_str(), std::ios::in);
       if (inFile)
-        file.channel.push_back("IR+V");
-    } else if (ch == "day_night" || ch == "RGB" || ch == "IR") {
+        file.channel.emplace_back("IR+V");
+    } else if (ch == "day_night" || ch == "RGB" || ch == "IR" || ch == "CTTH" || ch == "CTTH_HFT") {
       file.channel.push_back(ch);
     } else if (miutil::contains(ch, "+")) {
       bool found = false;

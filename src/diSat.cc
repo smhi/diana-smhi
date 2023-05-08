@@ -42,15 +42,6 @@
 
 using namespace::miutil;
 
-//static values that should be set from SatManager
-namespace {
-const float defaultCut = -1;
-const int defaultAlphacut = 0;
-const int defaultAlpha = 255;
-const int defaultTimediff = 60;
-const bool defaultClasstable = false;
-} // namespace
-
 Sat::Sat()
     : approved(false)
     , autoFile(true)
@@ -265,6 +256,24 @@ void Sat::setCalibration()
       ct.channel = start + "Infrared (" + plotChannels + "):";
       ct.a= AIr;
       ct.b= BIr -273.0;
+      // Set in map 1, 0 is the image
+      calibrationTable[1]=ct;
+      cal_channels.push_back(ct.channel);
+
+  } else if (plotChannels == "CTTH") {
+      table_cal ct;
+      ct.channel = start + "Height (" + plotChannels + "):";
+      ct.a= AIr;
+      ct.b= BIr;
+      // Set in map 1, 0 is the image
+      calibrationTable[1]=ct;
+      cal_channels.push_back(ct.channel);
+
+  } else if (plotChannels == "CTTH_HFT") {
+      table_cal ct;
+      ct.channel = start + "Height_hft (" + plotChannels + "):";
+      ct.a= (AIr*3.2808)/100.0;
+      ct.b= (BIr*3.2808)/100.0;
       // Set in map 1, 0 is the image
       calibrationTable[1]=ct;
       cal_channels.push_back(ct.channel);

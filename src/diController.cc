@@ -72,12 +72,12 @@
 using namespace miutil;
 
 Controller::Controller()
-    : plotm(0)
+    : plotm(nullptr)
     , fieldplotm(new FieldPlotManager())
-    , obsm(0)
-    , satm(0)
-    , objm(0)
-    , editm(0)
+    , obsm(nullptr)
+    , satm(nullptr)
+    , objm(nullptr)
+    , editm(nullptr)
     , editoverride(false)
 {
   METLIBS_LOG_SCOPE();
@@ -609,8 +609,11 @@ void Controller::putStations(StationPlot* stationPlot)
   plotm->setAnnotations();
 }
 
-void Controller::makeStationPlot(const std::string& commondesc, const std::string& common, const std::string& description, int from,
-                                 const std::vector<std::string>& data)
+void Controller::makeStationPlot(const std::string& commondesc,
+    const std::string& common,
+    const std::string& description,
+    int from,
+    const  std::vector<std::string>& data)
 {
   plotm->stationplots()->makeStationPlot(commondesc, common, description, from, data);
 }
@@ -625,12 +628,18 @@ std::vector<std::string> Controller::findStations(int x, int y, const std::strin
   return plotm->stationplots()->findStations(x, y, name, id);
 }
 
-void Controller::findStations(int x, int y, bool add, std::vector<std::string>& name, std::vector<int>& id, std::vector<std::string>& station)
+void Controller::findStations(int x, int y, bool add,
+    std::vector<std::string>& name,
+    std::vector<int>& id,
+    std::vector<std::string>& station)
 {
   plotm->stationplots()->findStations(x, y, add, name, id, station);
 }
 
-void Controller::stationCommand(const std::string& command, const std::vector<std::string>& data, const std::string& name, int id, const std::string& misc)
+void Controller::stationCommand(const std::string& command,
+    const std::vector<std::string>& data,
+    const std::string& name, int id,
+    const std::string& misc)
 {
   plotm->stationplots()->stationCommand(command, data, name, id, misc);
 
@@ -638,7 +647,8 @@ void Controller::stationCommand(const std::string& command, const std::vector<st
     plotm->setAnnotations();
 }
 
-void Controller::stationCommand(const std::string& command, const std::string& name, int id)
+void Controller::stationCommand(const std::string& command,
+    const std::string& name, int id)
 {
   plotm->stationplots()->stationCommand(command, name, id);
   plotm->setAnnotations();
@@ -686,10 +696,11 @@ std::string Controller::findLocation(int x, int y, const std::string& name)
 
 //******************************************************************
 
-std::map<std::string, InfoFile> Controller::getInfoFiles()
+std::map<std::string,InfoFile> Controller::getInfoFiles()
 {
   return LocalSetupParser::getInfoFiles();
 }
+
 
 std::vector<PlotElement> Controller::getPlotElements()
 {
@@ -708,7 +719,9 @@ std::vector<std::string> Controller::writeLog()
   return man_->writeLog();
 }
 
-void Controller::readLog(const std::vector<std::string>& vstr, const std::string& thisVersion, const std::string& logVersion)
+void Controller::readLog(const std::vector<std::string>& vstr,
+    const std::string& thisVersion,
+    const std::string& logVersion)
 {
   man_->readLog(vstr, thisVersion, logVersion);
 }

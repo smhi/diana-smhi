@@ -176,9 +176,13 @@ GridCollection::GridCollection()
 }
 
 // initialize collection from a list of sources
-bool GridCollection::setContents(const std::string& type, const std::string& name, const std::vector<std::string>& filenames,
-                                 const std::vector<std::string>& format, const std::vector<std::string>& config, const std::vector<std::string>& option,
-                                 GridIOsetup* setup, bool validTimeFromFilename)
+bool GridCollection::setContents(const std::string& type,
+    const std::string& name, const std::vector<std::string>& filenames,
+    const std::vector<std::string>& format,
+    const std::vector<std::string>& config,
+    const std::vector<std::string>& option,
+    GridIOsetup* setup,
+    bool validTimeFromFilename)
 {
   sourcetype = type;
   collectionname = name;
@@ -1013,8 +1017,8 @@ void GridCollection::addComputedParameters()
     const std::string& computeParameterName = fc.name;
 
     //check if parameter exists
-    std::set<gridinventory::GridParameter>::iterator pitr =
-        std::find_if(rinventory.parameters.begin(), rinventory.parameters.end(), compare_name(computeParameterName));
+    std::set<gridinventory::GridParameter>::iterator pitr = std::find_if(rinventory.parameters.begin(), rinventory.parameters.end(),
+                                                                    compare_name(computeParameterName));
     if (pitr != rinventory.parameters.end()) {
       METLIBS_LOG_DEBUG(LOGVAL(fc.name) << " found in inventory");
       continue;

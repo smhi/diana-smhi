@@ -66,7 +66,7 @@ ObjectManager::ObjectManager(PlotModule* pl)
   doCombine = false;
   objectsSaved= true;
   objectsChanged = false;
-  undoTemp = 0;
+  undoTemp = nullptr;
 }
 
 ObjectManager::~ObjectManager()
@@ -186,7 +186,7 @@ void ObjectManager::getCapabilitiesTime(plottimes_t& normalTimes, int& timediff,
 
   //Product with prog times
   if (fileName.empty()) {
-    std::vector<ObjFileInfo> ofi = getObjectFiles(objectname, true);
+    std::vector<ObjFileInfo> ofi= getObjectFiles(objectname,true);
     int nfinfo=ofi.size();
     for (int k=0; k<nfinfo; k++){
       normalTimes.insert(ofi[k].time);
@@ -276,14 +276,14 @@ std::vector<ObjFileInfo> ObjectManager::getObjectFiles(const std::string& object
   METLIBS_LOG_SCOPE();
 
   if (refresh) {
-    std::map<std::string, ObjectList>::iterator p, pend = objectFiles.end();
+    std::map<std::string,ObjectList>::iterator p,pend= objectFiles.end();
     for (p=objectFiles.begin(); p!=pend; p++)
       p->second.updated= false;
   }
 
   std::vector<ObjFileInfo> files;
 
-  std::map<std::string, ObjectList>::iterator po = objectFiles.find(objectname);
+  std::map<std::string,ObjectList>::iterator po= objectFiles.find(objectname);
   if (po==objectFiles.end())
     return files;
 
@@ -295,7 +295,8 @@ std::vector<ObjFileInfo> ObjectManager::getObjectFiles(const std::string& object
   return po->second.files;
 }
 
-std::vector<ObjFileInfo> ObjectManager::listFiles(ObjectList& ol)
+
+std::vector<ObjFileInfo> ObjectManager::listFiles(ObjectList & ol)
 {
   METLIBS_LOG_SCOPE();
   std::string fileString= ol.filename + "*";
@@ -315,7 +316,7 @@ std::vector<ObjFileInfo> ObjectManager::listFiles(ObjectList& ol)
       if (files.empty()) {
         files.push_back(info);
       } else {
-        std::vector<ObjFileInfo>::iterator p = files.begin();
+        std::vector <ObjFileInfo>::iterator p =  files.begin();
         while (p!=files.end() && p->time>info.time)
           p++;
         files.insert(p,info);
@@ -331,9 +332,9 @@ std::vector<ObjFileInfo> ObjectManager::listFiles(ObjectList& ol)
 std::string ObjectManager::prefixFileName(const std::string& fileName)
 {
   //get prefix from a file with name  /.../../prefix_*.yyyymmddhh
-  const std::vector<std::string> parts = miutil::split(fileName, 0, "/");
+  const std::vector <std::string> parts = miutil::split(fileName, 0, "/");
   const std::string& prefix = parts.back();
-  std::vector<std::string> sparts = miutil::split(prefix, 0, "_");
+  std::vector <std::string> sparts = miutil::split(prefix, 0, "_");
   return sparts.front();
 }
 
@@ -353,12 +354,12 @@ miTime ObjectManager::timeFilterFileName(const std::string& fileName, const miut
 miTime ObjectManager::timeFileName(const std::string& fileName)
 {
   //get time from a file with name *.yyyymmddhh
-  const std::vector<std::string> parts = miutil::split(fileName, 0, ".");
+  const std::vector <std::string> parts= miutil::split(fileName, 0, ".");
   int nparts= parts.size();
   if (parts[nparts-1].length() < 10) {
     size_t pos1 = fileName.find_last_of("_");
     size_t pos2 = fileName.find_last_of(".");
-    if (pos1 != std::string::npos && pos2 != std::string::npos && pos2 > pos1 + 10) {
+    if ( pos1 != std::string::npos && pos2 != std::string::npos && pos2 > pos1 + 10 ) {
       std::string tStr = fileName.substr(pos1+1,pos2-pos1-1);
       miutil::replace(tStr,"t","T");
       miTime time(tStr);
@@ -376,7 +377,8 @@ bool ObjectManager::getFileName(DisplayObjects& wObjects)
   if (wObjects.getObjectName().empty() || wObjects.getTime().undef())
     return false;
 
-  std::map<std::string, ObjectList>::iterator po;
+
+  std::map<std::string,ObjectList>::iterator po;
   po= objectFiles.find(wObjects.getObjectName());
   if (po==objectFiles.end()) return false;
 
@@ -634,6 +636,7 @@ void ObjectManager::changeMarkedColour(const Colour::ColourInfo & newColour)
   }
 }
 
+
 std::set<std::string> ObjectManager::getTextList()
 {
   return WeatherSymbol::getTextList();
@@ -644,12 +647,13 @@ void ObjectManager::getMarkedMultilineText(std::vector<std::string>& symbolText)
   editobjects.getMarkedMultilineText(symbolText);
 }
 
+
 void ObjectManager::getMarkedComplexText(std::vector<std::string>& symbolText, std::vector<std::string>& xText)
 {
   editobjects.getMarkedComplexText(symbolText,xText);
 }
 
-void ObjectManager::getMarkedComplexTextColored(std::vector<std::string>& symbolText, std::vector<std::string>& xText)
+void ObjectManager::getMarkedComplexTextColored(std::vector <std::string> & symbolText, std::vector <std::string> & xText)
 {
   editobjects.getMarkedComplexTextColored(symbolText,xText);
 }
@@ -697,12 +701,12 @@ bool ObjectManager::inEditTextMode(){
   return editobjects.inEditTextMode();
 }
 
-void ObjectManager::getCurrentComplexText(std::vector<std::string>& symbolText, std::vector<std::string>& xText)
+void ObjectManager::getCurrentComplexText(std::vector<std::string> & symbolText, std::vector<std::string> & xText)
 {
   WeatherSymbol::getCurrentComplexText(symbolText,xText);
 }
 
-void ObjectManager::setCurrentComplexText(const std::vector<std::string>& symbolText, const std::vector<std::string>& xText)
+void ObjectManager::setCurrentComplexText(const std::vector<std::string>& symbolText, const std::vector<std::string> & xText)
 {
   WeatherSymbol::setCurrentComplexText(symbolText,xText);
 }
