@@ -1,7 +1,7 @@
 
 MACRO(METNO_CMAKE_SETUP)
   INCLUDE(GNUInstallDirs)
-  SET(CMAKE_CXX_STANDARD 11)
+  SET(CMAKE_CXX_STANDARD 20)
 ENDMACRO()
 
 #########################################################################
