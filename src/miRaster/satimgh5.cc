@@ -72,13 +72,14 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <dirent.h>
+#include <cerrno>
+#include <sys/time.h>
+#include <ctime>
+
 #include <fstream>
 #include <sstream>
-
-#include <dirent.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <time.h>
+#include <set>
 
 using namespace miutil;
 using namespace satimg;
@@ -1729,20 +1730,94 @@ int metno::satimgh5::openDataset(hid_t root, string dataset, string path, string
 }
 
 /**
+ * Fast reading of metadata, groups, tested with radar HDF5 files.
+ * Significantly faster:
+ * OpenGroup, recursive, ~0.4 seconds.
+ * readMetadata ~0.02 to ~0.002 seconds.
+ */
+int metno::satimgh5::readMetadata(hid_t group, std::string groupname, std::string path, std::string metadata)
+{
+  METLIBS_LOG_TIME();
+  miutil::trim(metadata);
+  std::vector<std::string> metadataParts = miutil::split(metadata, ",", true);
+  std::set<std::string> groups;
+  const size_t num_metadataparts = metadataParts.size();
+  for (size_t i = 0; i < num_metadataparts; i++) {
+    std::vector<std::string> parts = miutil::split(metadataParts[i], "-", true);
+    if (parts.size() == 2) {
+      std::string tmppart = parts[1];
+      const size_t pos = tmppart.find_last_of(':');
+      if (pos != std::string::npos) {
+        tmppart.resize(pos);
+      }
+      miutil::replace(tmppart, ":", "/");
+      std::string name = groupname + tmppart;
+      groups.insert(name);
+    }
+  }
+  /* Loop through set and get metadata */
+  hsize_t nrObj = 0;
+  int nrAttrs = 0;
+  H5G_stat_t statbuf;
+  std::set<std::string>::iterator it;
+  for (it = groups.begin(); it != groups.end(); it++) {
+    std::string group_name = *it;
+    /* if a group does not exists, just read the next one */
+    if (H5Gget_objinfo(group, group_name.c_str(), true, NULL) < 0) {
+      METLIBS_LOG_ERROR("Group: '" << group_name << "' does not exist in file!");
+      continue;
+    }
+    if (H5Gget_objinfo(group, group_name.c_str(), true, &statbuf) >= 0) {
+      if (statbuf.type == H5G_GROUP) {
+        METLIBS_LOG_DEBUG("group: '" << group_name << "' is H5G_GROUP");
+        hid_t root = H5Gopen2(group, group_name.c_str(), H5P_DEFAULT);
+        H5Gget_num_objs(root, &nrObj);
+        nrAttrs = H5Aget_num_attrs(root);
+        METLIBS_LOG_DEBUG("group: '" << group_name <<
+                          "' nrObj '" << nrObj << "' nrAttrs '" << nrAttrs << "'");
+        std::string root_path = group_name;
+        /* adjust syntax */
+        miutil::replace(root_path, "/", ":");
+        /* remove the leading ':' */
+        root_path = root_path.substr(1, std::string::npos);
+        for (int k = 0; k < nrAttrs; k++) {
+          getAttributeFromGroup(root, k, root_path);
+        }
+        H5Gclose(root);
+      } else if (statbuf.type == H5G_DATASET) {
+        /* No metadata in dataset in ODIM h5 files, not tested */
+        METLIBS_LOG_DEBUG("group: " << group_name << " is H5G_DATASET");
+        std::string root_path = group_name;
+        /* adjust syntax */
+        miutil::replace(root_path, "/", ":");
+        /* remove the leading ':' */
+        root_path = root_path.substr(1, std::string::npos);
+        openDataset(group, group_name, root_path, metadata);
+        hid_t dset = H5Dopen2(group, group_name.data(), H5P_DEFAULT);
+        H5Dclose(dset);
+      }
+    } else {
+      METLIBS_LOG_ERROR("Problem reading group: '" << group_name << "' in file.");
+      continue;
+    }
+  }
+  return 0;
+}
+
+/**
  * If a group is found in the current block it is opened by this function that calls itself recursively to traverse subgroups.
  * This is the starting point for traversing a HDF5 file
  */
-int metno::satimgh5::openGroup(hid_t group, string groupname, string path, string metadata)
+int metno::satimgh5::openGroup(hid_t group, std::string groupname, std::string path, std::string metadata)
 {
-
-  METLIBS_LOG_SCOPE("group: " << group << " groupname: " << groupname << " path: " << path << " metadata: " << metadata);
+  METLIBS_LOG_SCOPE("group: '" << group << "' groupname: '" << groupname << "' path: '" << path << "' metadata: '" << metadata << "'");
 
   char tmpdataset[80];
   hsize_t nrObj = 0;
   int nrAttrs = 0;
   int obj_type = 0;
   H5G_stat_t statbuf;
-  string delimiter;
+  std::string delimiter;
 
   H5Gget_objinfo(group, groupname.c_str(), false, &statbuf);
   if (statbuf.type == H5G_GROUP) {
@@ -1750,7 +1825,7 @@ int metno::satimgh5::openGroup(hid_t group, string groupname, string path, strin
     hid_t root = H5Gopen2(group, groupname.c_str(), H5P_DEFAULT);
     H5Gget_num_objs(root, &nrObj);
     nrAttrs = H5Aget_num_attrs(root);
-    METLIBS_LOG_DEBUG("group: " << groupname << " nrObj " << nrObj << " nrAttrs " << nrAttrs);
+    METLIBS_LOG_DEBUG("group: '" << groupname << "' nrObj '" << nrObj << "' nrAttrs '" << nrAttrs << "'");
     for (int k = 0; k < nrAttrs; k++) {
       getAttributeFromGroup(root, k, path);
     }
@@ -1759,23 +1834,17 @@ int metno::satimgh5::openGroup(hid_t group, string groupname, string path, strin
       obj_type = H5Gget_objtype_by_idx(root, (hsize_t)i);
       if (obj_type == H5G_GROUP) {
         H5Gget_objname_by_idx(root, (hsize_t)i, tmpdataset, 80);
-        if (path.length() > 0)
-          delimiter = ":";
-        else
-          delimiter = "";
+        delimiter = path.length() > 0 ? ":" : "";
         openGroup(root, tmpdataset, path + delimiter + string(tmpdataset), metadata);
       } else if (obj_type == H5G_DATASET) {
         H5Gget_objname_by_idx(root, (hsize_t)i, tmpdataset, 80);
-        if (path.length() > 0)
-          delimiter = ":";
-        else
-          delimiter = "";
+        delimiter = path.length() > 0 ? ":" : "";
         openDataset(root, tmpdataset, path + delimiter + string(tmpdataset), metadata);
       }
     }
     H5Gclose(root);
   } else if (statbuf.type == H5G_DATASET) {
-    METLIBS_LOG_DEBUG("group: " << groupname << " is H5G_DATASET");
+    METLIBS_LOG_DEBUG("group: '" << groupname << "' is H5G_DATASET");
     openDataset(group, groupname, path, metadata);
   }
   return 0;
@@ -1994,9 +2063,20 @@ int metno::satimgh5::HDF5_head_diana(const string& infile, dihead& ginfo)
   METLIBS_LOG_DEBUG("satellite: " << ginfo.satellite);
 
   if (checkMetadata(infile, ginfo.metadata) == false) {
+    /* Check if open file isOK! */
     file = H5Fopen(infile.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-    openGroup(file, "/", "", ginfo.metadata);
+    if (file == H5I_INVALID_HID) {
+      METLIBS_LOG_ERROR("Opening HDF5 file returned error or object has an invalid ID");
+      return -1;
+    }
+    /* If not radar, use the old slow method */
+    if (ginfo.hdf5type != radar) {
+      openGroup(file, "/", "", ginfo.metadata);
+    } else {
+      readMetadata(file, "/", "", ginfo.metadata);
+    }
     if (H5Fclose(file) < 0) {
+      METLIBS_LOG_ERROR("Closing HDF5 file returned error");
       return -1;
     }
   }
