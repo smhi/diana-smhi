@@ -1319,7 +1319,7 @@ int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, string pat
  */
 int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, string path, string name, bool invert, float** float_data, int chan)
 {
-  METLIBS_LOG_SCOPE();
+  METLIBS_LOG_TIME();
 
   hid_t dset;
   herr_t status;
@@ -1341,7 +1341,7 @@ int metno::satimgh5::readDataFromDataset(dihead& ginfo, hid_t source, string pat
 int metno::satimgh5::getAttributeFromGroup(hid_t& dataset, int index, string path)
 {
 
-  METLIBS_LOG_SCOPE();
+  METLIBS_LOG_TIME();
 
   hid_t native_type, memb_id, space;
   hsize_t dims[1];
