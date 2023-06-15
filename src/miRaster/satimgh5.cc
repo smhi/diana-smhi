@@ -677,9 +677,9 @@ int metno::satimgh5::makeImage(unsigned char* image[], float* float_data[])
   float offset = 0;
   if (hdf5map.count("offset"))
     offset = to_float(hdf5map["offset"]);
-  int nodata = 255;
+  float nodata = 255.0;
   if (hdf5map.count("nodata"))
-    nodata = to_int(hdf5map["nodata"], 255);
+    nodata = to_float(hdf5map["nodata"], 255.0);
   int noofcl = 255;
   if (hdf5map.count("noofcl"))
     noofcl = to_int(hdf5map["noofcl"], 255);
@@ -697,7 +697,7 @@ int metno::satimgh5::makeImage(unsigned char* image[], float* float_data[])
     METLIBS_LOG_DEBUG("border with colour " << borderColour);
   if (isPalette)
     METLIBS_LOG_DEBUG("palette");
-  METLIBS_LOG_DEBUG("making radar image: ");
+  METLIBS_LOG_DEBUG("making radar image: nodata = " << nodata);
 
   for (int i = 0; i < xsize; i++) {
     for (int j = 0; j < ysize; j++) {
