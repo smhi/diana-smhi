@@ -67,26 +67,26 @@
 #include <puTools/miTime.h>
 
 #if defined(HAVE_GEOTIFF_GEOTIFF_H)
+#include <geotiff/geo_tiffp.h>
 #include <geotiff/geotiff.h>
 #include <geotiff/geotiffio.h>
-#include <geotiff/geo_tiffp.h>
 #elif defined(HAVE_LIBGEOTIFF_GEOTIFF_H)
+#include <libgeotiff/geo_tiffp.h>
 #include <libgeotiff/geotiff.h>
 #include <libgeotiff/geotiffio.h>
-#include <libgeotiff/geo_tiffp.h>
 #elif defined(HAVE_GEOTIFF_H)
+#include <geo_tiffp.h>
 #include <geotiff.h>
 #include <geotiffio.h>
-#include <geo_tiffp.h>
 #else
 #error "no location for geotiff.h"
 #endif
 
 #include <tiffio.h>
 
-#include <sstream>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
+#include <sstream>
 
 using namespace satimg;
 
@@ -115,7 +115,7 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
   METLIBS_LOG_TIME();
 
   ginfo.noofcl = 0;
-  ginfo.zsize =1;
+  ginfo.zsize = 1;
 
   const int pal = head_diana(infile, ginfo);
   METLIBS_LOG_DEBUG(LOGVAL(pal));
@@ -134,20 +134,20 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
   tsample_t samplesperpixel;
   TIFFGetField(in.get(), TIFFTAG_SAMPLESPERPIXEL, &samplesperpixel);
 
-  const int size = ginfo.xsize * ginfo.ysize;
+  const auto size = ginfo.xsize * ginfo.ysize;
 
-  uint32  count;
-  void    *data;
+  uint32 count;
+  void* data;
   // TIFFTAG_GDAL_METADATA 42112 defined in some projets
   // see https://www.awaresystems.be/imaging/tiff/tifftags/gdal_metadata.html
-  if (samplesperpixel == 1 && TIFFGetField(in.get(), /*GDAL_METADATA*/ 42112, &count, &data)) {
+  if (samplesperpixel == 1 && (TIFFGetField(in.get(), /*GDAL_METADATA*/ 42112, &count, &data) != 0)) {
     // this is an xml document, we just search for text and hope that
     // scale is after '... role="scale">'
-    if (const char* t = strstr((char *)data, "scale")) {
-      ginfo.AIr = atof(t+7);
+    if (const char* t = strstr((char*)data, "scale")) {
+      ginfo.AIr = atof(t + 7);
     }
     // ... and offset after '... role="offset">'
-    if (const char* t = strstr((char *)data, "offset")) {
+    if (const char* t = strstr((char*)data, "offset")) {
       ginfo.BIr = atof(t + 8);
     }
 
@@ -155,33 +155,32 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
     std::ostringstream oss;
     oss << "T=(" << ginfo.BIr << ")+(" << ginfo.AIr << ")*C";
     ginfo.cal_ir = oss.str();
-    
+
     METLIBS_LOG_DEBUG("42112" << LOGVAL(ginfo.cal_ir));
 
-    image[1] = (unsigned char *) malloc(ginfo.ysize*ginfo.xsize);
-    int nStrips = TIFFNumberOfStrips(in.get());
+    image[1] = (unsigned char*)malloc(ginfo.ysize * ginfo.xsize);
+    auto nStrips = TIFFNumberOfStrips(in.get());
     int s = 0;
-    int tiles = TIFFNumberOfTiles(in.get());
+    auto tiles = TIFFNumberOfTiles(in.get());
 
     if (tiles > nStrips) {
-      uint32 imageWidth,imageLength;
-      uint32 x, y;
+      auto imageWidth = ginfo.xsize;
+      auto imageLength = ginfo.ysize;
+      auto tileSize = TIFFTileSize(in.get());
+
       tdata_t buf;
-
-      imageWidth  = ginfo.xsize;
-      imageLength = ginfo.ysize;
-      int tileSize = TIFFTileSize(in.get());
-
       buf = _TIFFmalloc(tileSize);
 
+      uint32 y;
+      uint32 x;
       for (y = 0; y < imageLength; y += tileLength) {
         for (x = 0; x < imageWidth; x += tileWidth) {
-          tsize_t res = TIFFReadTile(in.get(), buf, x, y, 0, -1);
+          auto res = TIFFReadTile(in.get(), buf, x, y, 0, -1);
           if (res > 0) {
             // place tile buf in the larger image buffer in the right place
             // t = to, f = from
-            for (int t=y*imageWidth + x, f=0;  f < tileSize; t += imageWidth, f += tileWidth) {
-              memcpy(&image[1][t], (unsigned char *)buf + f, tileWidth);
+            for (int t = y * imageWidth + x, f = 0; f < tileSize; t += imageWidth, f += tileWidth) {
+              memcpy(&image[1][t], (unsigned char*)buf + f, tileWidth);
             }
           } else {
             METLIBS_LOG_ERROR("TIFFReadTile Failed at tile: " << x << "," << y << " result: " << res);
@@ -189,38 +188,36 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
         }
       }
       _TIFFfree(buf);
-    }
-    else {
-      for (int i=0; i < nStrips; ++i) {
-        s += TIFFReadEncodedStrip(in.get(), i, image[1] + s, size/nStrips);
+    } else {
+      for (auto i = 0; i < nStrips; ++i) {
+        s += TIFFReadEncodedStrip(in.get(), i, image[1] + s, size / nStrips);
       }
     }
   }
-  METLIBS_LOG_DEBUG(LOGVAL(ginfo.projection.getProj4Definition()) << LOGVAL(size)
-                    << LOGVAL(ginfo.xsize) << LOGVAL(ginfo.ysize) << LOGVAL(ginfo.zsize)
-                    << LOGVAL(samplesperpixel) << LOGVAL(ginfo.time));
+  METLIBS_LOG_DEBUG(LOGVAL(ginfo.projection.getProj4Definition())
+                    << LOGVAL(size) << LOGVAL(ginfo.xsize) << LOGVAL(ginfo.ysize) << LOGVAL(ginfo.zsize) << LOGVAL(samplesperpixel) << LOGVAL(ginfo.time));
   /*
    * Memory allocated for image data in this function (*image) is freed
    * in function main process.
    */
   if (ginfo.zsize > MAXCHANNELS) {
     METLIBS_LOG_ERROR("ginfo.zsize > MAXCHANNELS!");
-    return(-1);
+    return (-1);
   }
 
   // RGBA buffer
   // causes alloc-dealloc mismatch at any delete[] :) with image_rgba_ @ disat 371.
-  image[0] = (unsigned char *) malloc((size)*4);
-  memset(image[0], 0, size*4);
-  //image[0] = new unsigned char[size * 4];
-  //image[0] = nullptr;
+  image[0] = (unsigned char*)malloc((size)*4);
+  memset(image[0], 0, size * 4);
+  // image[0] = new unsigned char[size * 4];
+  // image[0] = nullptr;
 
-  std::string file = infile.substr(infile.rfind("/") + 1);
+  std::string file = infile.substr(infile.rfind('/') + 1);
   ImageCache* mImageCache = ImageCache::getInstance();
 
   if (!mImageCache->getFromCache(file, (uint8_t*)image[0])) {
-    if (!TIFFReadRGBAImageOriented(in.get(), ginfo.xsize, ginfo.ysize, (uint32*)image[0])) {
-      METLIBS_LOG_ERROR("TIFFReadRGBAImageOriented (ORIENTATION_BOTLEFT) failed: size " <<  ginfo.xsize << "," << ginfo.ysize);
+    if (TIFFReadRGBAImageOriented(in.get(), ginfo.xsize, ginfo.ysize, (uint32*)image[0]) == 0) {
+      METLIBS_LOG_ERROR("TIFFReadRGBAImageOriented (ORIENTATION_BOTLEFT) failed: size " << ginfo.xsize << "," << ginfo.ysize);
     }
     // GDAL_NODATA, see https://www.awaresystems.be/imaging/tiff/tifftags/gdal_nodata.html
     // Used by the GDAL library, contains an ASCII encoded nodata or background pixel value.
@@ -228,19 +225,18 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
       const char* ascii = (const char*)data;
       const unsigned int nodata = atoi(ascii);
       const uint32_t rgba_nodata = 0xFF << 24 | nodata << 16 | nodata << 8 | nodata;
-      for (int i=0; i<size; ++i) {
-        uint32_t* rgba = (uint32_t*)(&image[0][i*4]);
+      for (int i = 0; i < size; ++i) {
+        uint32_t* rgba = (uint32_t*)(&image[0][i * 4]);
         if (*rgba == rgba_nodata)
           *rgba = 0;
       }
     }
-    mImageCache->putInCache(file, (uint8_t*)image[0], size*4);
+    mImageCache->putInCache(file, (uint8_t*)image[0], size * 4);
   }
-  return(pal);
+  return (pal);
 }
 
-
-int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
+int metno::GeoTiff::head_diana(const std::string& infile, dihead& ginfo)
 {
   METLIBS_LOG_TIME();
 
@@ -254,18 +250,18 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
 
   // test whether this is a color palette image
   short pmi; // PhotometricInterpretation, 3: Baseline palette-color; 2: Baseline RGB
-  if (!TIFFGetField(in.get(), TIFFTAG_PHOTOMETRIC, &pmi)) {
+  if (TIFFGetField(in.get(), TIFFTAG_PHOTOMETRIC, &pmi) == 0) {
     METLIBS_LOG_ERROR("no TIFFTAG_PHOTOMETRIC in '" << infile << "'");
     return -1;
   }
   if (pmi == PHOTOMETRIC_PALETTE) { // see tiff.h for the constants
     unsigned short int *red, *green, *blue;
-    if (!TIFFGetField(in.get(), TIFFTAG_COLORMAP, &red, &green, &blue)) {
+    if (TIFFGetField(in.get(), TIFFTAG_COLORMAP, &red, &green, &blue) == 0) {
       METLIBS_LOG_ERROR("no TIFFTAG_COLORMAP in '" << infile << "'");
       return -1;
     }
 
-    for (int i=0; i<256; i++) {
+    for (int i = 0; i < 256; i++) {
       ginfo.cmap[0][i] = red[i];
       ginfo.cmap[1][i] = green[i];
       ginfo.cmap[2][i] = blue[i];
@@ -273,27 +269,27 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
   }
   // Rest is added by Niklas, for making greyscales of Storm single channel images...
   else if (pmi == PHOTOMETRIC_MINISWHITE) {
-    for (int i=0; i<256; i++) {
-      ginfo.cmap[0][i] = (255-i)*256;
-      ginfo.cmap[1][i] = (255-i)*256;
-      ginfo.cmap[2][i] = (255-i)*256;
+    for (int i = 0; i < 256; i++) {
+      ginfo.cmap[0][i] = (255 - i) * 256;
+      ginfo.cmap[1][i] = (255 - i) * 256;
+      ginfo.cmap[2][i] = (255 - i) * 256;
     }
   } else if (pmi == PHOTOMETRIC_MINISBLACK) {
-    for (int i=0; i<256; i++) {
-      ginfo.cmap[0][i] = i*256;
-      ginfo.cmap[1][i] = i*256;
-      ginfo.cmap[2][i] = i*256;
+    for (int i = 0; i < 256; i++) {
+      ginfo.cmap[0][i] = i * 256;
+      ginfo.cmap[1][i] = i * 256;
+      ginfo.cmap[2][i] = i * 256;
     }
   }
 
-  char* datetime = 0;
-  if (TIFFGetField(in.get(), TIFFTAG_DATETIME, &datetime) && datetime) {
+  char* datetime = nullptr;
+  if ((TIFFGetField(in.get(), TIFFTAG_DATETIME, &datetime) != 0) && (datetime != nullptr)) {
     METLIBS_LOG_DEBUG(LOGVAL(datetime));
 
     int year, month, day, hour, minute, sec;
     if (sscanf(datetime, "%4d-%2d-%2d %2d:%2d:%2d", &year, &month, &day, &hour, &minute, &sec) != 6) {
       if (sscanf(datetime, "%4d:%2d:%2d %2d:%2d:%2d", &year, &month, &day, &hour, &minute, &sec) != 6) {
-         METLIBS_LOG_WARN("Invalid time in TIFFTAG_DATETIME '" << datetime << "'");
+        METLIBS_LOG_WARN("Invalid time in TIFFTAG_DATETIME '" << datetime << "'");
       }
     }
     if (year == 0)
@@ -316,37 +312,42 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
     return -1;
   }
 
-  double x_0, y_0, x_scale, y_scale;
+  double x_0;
+  double y_0;
+  double y_scale;
+  double x_scale;
 
   // Geospecific Tags
   uint32 transmatrix_size = 0;
-  double* transmatrix = 0;
-  const bool have_transmatrix = (TIFFGetField(in.get(), GTIFF_TRANSMATRIX, &transmatrix_size, &transmatrix) == 1) && (transmatrix_size == 16) && transmatrix;
+  double* transmatrix = nullptr;
+  const bool have_transmatrix =
+      (TIFFGetField(in.get(), GTIFF_TRANSMATRIX, &transmatrix_size, &transmatrix) == 1) && (transmatrix_size == 16) && (transmatrix != nullptr);
   if (have_transmatrix) {
     x_scale = transmatrix[0];
     x_0 = transmatrix[3];
     y_scale = transmatrix[5];
     y_0 = transmatrix[7];
-    if (transmatrix[1] != 0 || transmatrix[1] != 0 || transmatrix[4] != 0 || transmatrix[6] != 0) {
+    //transmatrix[1] != 0 || transmatrix[1] != 0 IDENTICAL.
+    if (transmatrix[1] != 0 || transmatrix[4] != 0 || transmatrix[6] != 0 || transmatrix[9] != 0) {
       METLIBS_LOG_WARN("only the linear part of GTIFF_TRANSMATRIX is supported in '" << infile << "'");
     }
   } else { // !have_transmatrix
     uint32 tiepointsize = 0;
-    double* tiepoints = 0; //[6];
-    const bool have_tiepoints = (TIFFGetField(in.get(), TIFFTAG_GEOTIEPOINTS, &tiepointsize, &tiepoints) == 1) && (tiepointsize >= 6) && tiepoints;
+    double* tiepoints = nullptr; //[6];
+    const bool have_tiepoints = (TIFFGetField(in.get(), TIFFTAG_GEOTIEPOINTS, &tiepointsize, &tiepoints) == 1) && (tiepointsize >= 6) && (tiepoints != nullptr);
 
     uint32 pixscalesize = 0;
-    double* pixscale = 0; //[3];
-    const bool have_pixelscale = (TIFFGetField(in.get(), TIFFTAG_GEOPIXELSCALE, &pixscalesize, &pixscale) == 1) && (pixscalesize == 3) && pixscale;
+    double* pixscale = nullptr; //[3];
+    const bool have_pixelscale = (TIFFGetField(in.get(), TIFFTAG_GEOPIXELSCALE, &pixscalesize, &pixscale) == 1) && (pixscalesize == 3) && (pixscale != nullptr);
 
     if (METLIBS_LOG_DEBUG_ENABLED()) {
       METLIBS_LOG_DEBUG("tiepointsize: " << tiepointsize);
-      if (tiepoints) {
+      if (tiepoints != nullptr) {
         for (uint32 i = 0; i < tiepointsize; i++)
           METLIBS_LOG_DEBUG("tiepoints[" << i << "]=" << tiepoints[i]);
       }
       METLIBS_LOG_DEBUG("pixscalesize: " << pixscalesize);
-      if (pixscale) {
+      if (pixscale != nullptr) {
         for (uint32 i = 0; i < pixscalesize; i++)
           METLIBS_LOG_DEBUG("pixscale[" << i << "]=" << pixscale[i]);
       }
@@ -366,13 +367,13 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
 
   /* Coordinate Transformation Codes */
   short linearUnitsCode;
-  if (!GTIFKeyGet(gtifin.get(), ProjLinearUnitsGeoKey, &linearUnitsCode, 0, 1)) {
+  if (GTIFKeyGet(gtifin.get(), ProjLinearUnitsGeoKey, &linearUnitsCode, 0, 1) == 0) {
     linearUnitsCode = 32767;
   }
   double unit_scale_factor = 1;
 
   unsigned short modeltype;
-  if (!GTIFKeyGet(gtifin.get(), GTModelTypeGeoKey, &modeltype, 0, 1)) {
+  if (GTIFKeyGet(gtifin.get(), GTModelTypeGeoKey, &modeltype, 0, 1) == 0) {
     METLIBS_LOG_ERROR("getting GTModelType from file");
     return -1;
   }
@@ -380,13 +381,14 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
   if (modeltype == 32767) {
     // User defined WKT, use gdalsrsrinfo to convert to proj4
     int cit_size;
-    int cit_length = GTIFKeyInfo(gtifin.get(), PCSCitationGeoKey, &cit_size, NULL);
+    auto cit_length = GTIFKeyInfo(gtifin.get(), PCSCitationGeoKey, &cit_size, NULL);
     if (cit_length <= 0) {
       METLIBS_LOG_ERROR("Missing PCSCitationGeoKey");
       return -1;
     }
     std::unique_ptr<char[]> citation(new char[cit_length]);
     GTIFKeyGet(gtifin.get(), PCSCitationGeoKey, citation.get(), 0, cit_length);
+
     std::string PCSCitation(citation.get());
 
     miutil::replace(PCSCitation, "ESRI PE String = ", "");
@@ -397,29 +399,29 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
     /* Assume mercartor for now */
 
     double GeogSemiMajorAxis = 0, GeogSemiMinorAxis = 0, GeogInvFlattening = 0;
-    if (!GTIFKeyGet(gtifin.get(), GeogSemiMajorAxisGeoKey, &GeogSemiMajorAxis, 0, 1)) {
+    if (GTIFKeyGet(gtifin.get(), GeogSemiMajorAxisGeoKey, &GeogSemiMajorAxis, 0, 1) == 0) {
       METLIBS_LOG_INFO("No GeogSemiMajorAxisGeoKey in geotiff, set to 6.37814e+06");
       GeogSemiMajorAxis = 6.37814e6;
     }
     unsigned short GeogAngularUnits, GeogEllipsoid, GeographicType;
-    if (!GTIFKeyGet(gtifin.get(), GeogAngularUnitsGeoKey, &GeogAngularUnits, 0, 1)) {
+    if (GTIFKeyGet(gtifin.get(), GeogAngularUnitsGeoKey, &GeogAngularUnits, 0, 1) == 0) {
       GeogAngularUnits = Angular_Degree;
     }
-    if (!GTIFKeyGet(gtifin.get(), GeogEllipsoidGeoKey, &GeogEllipsoid, 0, 1)) {
+    if (GTIFKeyGet(gtifin.get(), GeogEllipsoidGeoKey, &GeogEllipsoid, 0, 1) == 0) {
       GeogEllipsoid = 32767;
     }
-    if (!GTIFKeyGet(gtifin.get(), GeogSemiMinorAxisGeoKey, &GeogSemiMinorAxis, 0, 1)) {
+    if (GTIFKeyGet(gtifin.get(), GeogSemiMinorAxisGeoKey, &GeogSemiMinorAxis, 0, 1) == 0) {
       GeogSemiMinorAxis = 6356752.314;
     }
-    if (!GTIFKeyGet(gtifin.get(), GeogInvFlatteningGeoKey, &GeogInvFlattening, 0, 1)) {
+    if (GTIFKeyGet(gtifin.get(), GeogInvFlatteningGeoKey, &GeogInvFlattening, 0, 1) == 0) {
       GeogInvFlattening = 298.257;
     }
-    if (!GTIFKeyGet(gtifin.get(), GeographicTypeGeoKey, &GeographicType, 0, 1)) {
+    if (GTIFKeyGet(gtifin.get(), GeographicTypeGeoKey, &GeographicType, 0, 1) == 0) {
       GeographicType = 32767; // Default value
     }
 
     int cit_size;
-    int cit_length = GTIFKeyInfo(gtifin.get(), GeogCitationGeoKey, &cit_size, NULL);
+    auto cit_length = GTIFKeyInfo(gtifin.get(), GeogCitationGeoKey, &cit_size, nullptr);
     std::string GTCitation;
     if (cit_length > 0) {
       std::unique_ptr<char[]> citation(new char[cit_length]);
@@ -460,7 +462,7 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
 
   } else if (modeltype == ModelTypeProjected) {
     unsigned short ProjectedCSType = 0;
-    if (!GTIFKeyGet(gtifin.get(), ProjectedCSTypeGeoKey, &ProjectedCSType, 0, 1)) {
+    if (GTIFKeyGet(gtifin.get(), ProjectedCSTypeGeoKey, &ProjectedCSType, 0, 1) == 0) {
       METLIBS_LOG_ERROR("geotiff key ProjectedCSTypeGeoKey could not be read");
       return -1;
     }
@@ -470,7 +472,7 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
       proj4 << "+init=epsg:" << ProjectedCSType;
     } else /*if (ProjectedCSType == 32767)*/ {
       unsigned short ProjCoordTrans = 0;
-      if (!GTIFKeyGet(gtifin.get(), ProjCoordTransGeoKey, &ProjCoordTrans, 0, 1)) {
+      if (GTIFKeyGet(gtifin.get(), ProjCoordTransGeoKey, &ProjCoordTrans, 0, 1) == 0) {
         METLIBS_LOG_ERROR("geotiff key ProjectionGeoKey could not be read");
         return -1;
       }
@@ -539,13 +541,13 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
 
         double GeogSemiMajorAxis = 6370997, GeogSemiMinorAxis = GeogSemiMajorAxis, GeogInvFlattening = 298;
         bool have_semiminor_axis = false;
-        if (GTIFKeyGet(gtifin.get(), GeogSemiMajorAxisGeoKey, &GeogSemiMajorAxis, 0, 1)) {
+        if (GTIFKeyGet(gtifin.get(), GeogSemiMajorAxisGeoKey, &GeogSemiMajorAxis, 0, 1) != 0) {
           METLIBS_LOG_DEBUG(LOGVAL(GeogSemiMajorAxis));
         }
-        if (GTIFKeyGet(gtifin.get(), GeogSemiMinorAxisGeoKey, &GeogSemiMinorAxis, 0, 1)) {
+        if (GTIFKeyGet(gtifin.get(), GeogSemiMinorAxisGeoKey, &GeogSemiMinorAxis, 0, 1) != 0) {
           METLIBS_LOG_DEBUG(LOGVAL(GeogSemiMinorAxis));
           have_semiminor_axis = true;
-        } else if (GTIFKeyGet(gtifin.get(), GeogInvFlatteningGeoKey, &GeogInvFlattening, 0, 1)) {
+        } else if (GTIFKeyGet(gtifin.get(), GeogInvFlatteningGeoKey, &GeogInvFlattening, 0, 1) != 0) {
           METLIBS_LOG_DEBUG(LOGVAL(GeogInvFlattening));
         }
 
@@ -591,22 +593,22 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead &ginfo)
   ginfo.Ax = x_scale * unit_scale_factor;
   ginfo.Ay = y_scale * unit_scale_factor;
 
-  if (!TIFFGetField(in.get(), TIFFTAG_IMAGEWIDTH, &ginfo.xsize)) {
+  if (TIFFGetField(in.get(), TIFFTAG_IMAGEWIDTH, &ginfo.xsize) == 0) {
     METLIBS_LOG_DEBUG("No TIFFTAG_IMAGEWIDTH");
   }
-  if (!TIFFGetField(in.get(), TIFFTAG_IMAGELENGTH, &ginfo.ysize)) {
+  if (TIFFGetField(in.get(), TIFFTAG_IMAGELENGTH, &ginfo.ysize) == 0) {
     METLIBS_LOG_DEBUG("No TIFFTAG_IMAGELENGTH");
   }
 
   int tilesAcross = 1, tilesDown = 1;
 
   unsigned int tileWidth;
-  if (!TIFFGetField(in.get(), TIFFTAG_TILEWIDTH, &tileWidth)) {
+  if (TIFFGetField(in.get(), TIFFTAG_TILEWIDTH, &tileWidth) == 0) {
     METLIBS_LOG_DEBUG("No TIFFTAG_TILEWIDTH");
     tileWidth = 0;
   }
   unsigned int tileLength;
-  if (!TIFFGetField(in.get(), TIFFTAG_TILELENGTH, &tileLength)) {
+  if (TIFFGetField(in.get(), TIFFTAG_TILELENGTH, &tileLength) == 0) {
     METLIBS_LOG_DEBUG("No TIFFTAG_TILELENGTH");
     tileLength = 0;
   }
