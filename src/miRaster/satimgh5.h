@@ -115,6 +115,17 @@ private:
   static int getAttributeFromGroup(hid_t& dataset, int index, std::string path);
 
   /**
+   * @brief Reads the metadata of the HDF5 file and fills the dihead with data.
+   * Only reads the metadata that is specified in Diana's setupfile.
+   * Opens the specified groups and reads all of the attributes of that group.
+   * @param group - group (or dataset) to process
+   * @param groupname - name of the group (or dataset) to process
+   * @param path - path to the group (or dataset) to process
+   * @param metadata - metadata from configuration file
+   */
+  static int readMetadata(hid_t group, std::string groupname, std::string path, std::string metadata);
+
+  /**
    * If a group is found in the current block it is opened by this function that calls itself recursively to traverse subgroups.
    * Stores the data in hdf5map with path and value.
    * @param group - group (or dataset) to process
