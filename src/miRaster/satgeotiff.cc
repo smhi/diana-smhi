@@ -171,6 +171,17 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
       tdata_t buf;
       buf = _TIFFmalloc(tileSize);
 
+      unsigned int tileWidth;
+      if (TIFFGetField(in.get(), TIFFTAG_TILEWIDTH, &tileWidth) == 0) {
+        METLIBS_LOG_DEBUG("No TIFFTAG_TILEWIDTH");
+        tileWidth = 0;
+      }
+      unsigned int tileLength;
+      if (TIFFGetField(in.get(), TIFFTAG_TILELENGTH, &tileLength) == 0) {
+        METLIBS_LOG_DEBUG("No TIFFTAG_TILELENGTH");
+        tileLength = 0;
+      }
+
       uint32 y;
       uint32 x;
       for (y = 0; y < imageLength; y += tileLength) {
