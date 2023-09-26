@@ -76,6 +76,8 @@ private:
   std::vector<std::string> popupSpec; // Parameter data from setupfile
 
   ObsDialogInfo::PlotType_v setupPlotTypes_;
+  
+  std::vector<ObsDialogInfo::Par> setupParameters_;
 
   bool useArchive; //read archive files too.
 
@@ -90,6 +92,7 @@ private:
   bool parseCriteriaSetup();
   bool parsePopupWindowSetup();
   bool parsePlotTypeSetup();
+  bool parseParameterSetup();
 
 public:
   ObsManager();

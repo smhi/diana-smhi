@@ -41,6 +41,8 @@
 
 #include <algorithm>
 
+#include <iostream>
+
 #define MILOGGER_CATEGORY "diana.ObsManager"
 #include <miLogger/miLogging.h>
 
@@ -247,6 +249,7 @@ bool ObsManager::parseSetup()
   parseCriteriaSetup();
   parsePopupWindowSetup();
   parsePlotTypeSetup();
+  parseParameterSetup();
   return true;
 }
 
@@ -467,5 +470,50 @@ bool ObsManager::parsePlotTypeSetup()
     setupPlotTypes_.push_back(pt);
   }
 
+  return true;
+}
+
+bool ObsManager::parseParameterSetup()
+{
+  METLIBS_LOG_SCOPE();
+  setupParameters_.clear();
+
+  const std::string obs_parameters_data = "OBSERVATION_PARAMETERS";
+  std::vector<std::string> sect_parameters_data;
+  if (!SetupParser::getSection(obs_parameters_data, sect_parameters_data))
+    return false;
+
+  for (const std::string& sptd : sect_parameters_data) {
+    std::vector<std::string> token = miutil::split(sptd, "=");
+      if ((token.size() == 2) && (token[0] == "parameter")) {
+        std::vector <std::string> values = miutil::split(token[1], ",");
+        
+        if (values.size() == 7) {
+          // We must trim for whitespace
+          for (size_t i = 0; i < values.size(); i++) {
+            std::cerr << "'" << values[i] << "'" << std::endl;
+          }
+          ObsDialogInfo::ParType ptype;
+          // enum ParType { pt_std, pt_knot, pt_temp, pt_rrr };
+          if (values[1] == "pt_std") {
+            ptype = ObsDialogInfo::pt_std;
+          } else if(values[1] == "pt_knot") {
+            ptype = ObsDialogInfo::pt_knot;
+          } else if(values[1] == "pt_temp") {
+            ptype = ObsDialogInfo::pt_temp;
+          } else if(values[1] == "pt_rrr") {
+            ptype = ObsDialogInfo::pt_rrr;
+          }
+          ObsDialogInfo::Par pars(values[0], ptype, miutil::to_int(values[2]), miutil::to_int(values[3]), values[4], miutil::to_int(values[5]), miutil::to_int(values[6]));
+          setupParameters_.push_back(pars);
+        } else {
+          METLIBS_LOG_WARN("ERROR in OBSERVATION_PARAMETERS, wrong no of values for parameter key");
+          continue;
+        }
+      } else {
+        METLIBS_LOG_WARN("ERROR in OBSERVATION_PARAMETERS, parameter key missing");
+        continue;
+      }
+    }
   return true;
 }
