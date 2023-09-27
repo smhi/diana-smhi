@@ -38,8 +38,8 @@
 
 #include <puTools/TimeFilter.h>
 
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
 
 class ObsData;
@@ -55,9 +55,11 @@ struct ObsDialogInfo;
   - managing file/time info
   - read data
 */
-class ObsManager {
+class ObsManager
+{
 public:
-  struct ProdInfo {
+  struct ProdInfo
+  {
     std::string name;
     std::set<ObsPlotType> plottypes; //! for which style of plotting should this be reader be available?
     ObsReader_p reader;              //! observation data reader
@@ -76,10 +78,10 @@ private:
   std::vector<std::string> popupSpec; // Parameter data from setupfile
 
   ObsDialogInfo::PlotType_v setupPlotTypes_;
-  
+
   std::vector<ObsDialogInfo::Par> setupParameters_;
 
-  bool useArchive; //read archive files too.
+  bool useArchive; // read archive files too.
 
   //--------------------------------------
 
