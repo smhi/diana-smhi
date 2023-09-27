@@ -149,8 +149,8 @@ QList<QPointF> getPoints(const QDomNode &coordsNode, QString &error)
   const QString coords = coordsNode.firstChild().nodeValue();
   QList<QPointF> points;
 
-  foreach (QString coord, coords.split(QRegExp("\\s+"), QString::SkipEmptyParts)) {
-    const QStringList coordComps = coord.split(",", QString::SkipEmptyParts);
+  foreach (QString coord, coords.split(QRegExp("\\s+"), Qt::SkipEmptyParts)) {
+    const QStringList coordComps = coord.split(",", Qt::SkipEmptyParts);
     if (coordComps.size() < 2) {
       error = QString("expected at least two components (i.e. lat, lon) in coordinate, found %1: %2")
           .arg(coordComps.size()).arg(coord);
@@ -387,7 +387,7 @@ static QList<QPointF> getOldLatLonPoints(const QString &lonLatPoints, QString &e
   error = QString();
   QList<QPointF> points;
 
-  QStringList plist = lonLatPoints.split(QRegExp("[,\\s]+"), QString::SkipEmptyParts);
+  QStringList plist = lonLatPoints.split(QRegExp("[,\\s]+"), Qt::SkipEmptyParts);
   if (plist.isEmpty()) {
     error = QString("no points found: %1").arg(lonLatPoints);
     return QList<QPointF>();

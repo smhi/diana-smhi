@@ -203,12 +203,12 @@ void QtPlot::plotText(QPainter& painter, const std::vector<std::string>& annotat
     label = diutil::formatLongitude(mTimeCSPoint.lonDeg(), 1, 5)
         + " " + diutil::formatLatitude(mTimeCSPoint.latDeg(), 1, 5);
   }
-  const float label_w = painter.fontMetrics().width(label);
+  const float label_w = painter.fontMetrics().horizontalAdvance(label);
   painter.setPen(diutil::QC(colourOrContrast(mOptions->textColour)));
   painter.drawText(QPointF(mTotalSize.width() - label_w - mCharSize.width(), yCSName), label);
   if (not isTimeGraph()) { // show cross section time
     const QString time = QString::fromStdString(mCrossectionTime.isoTime());
-    const float time_w = painter.fontMetrics().width(time);
+    const float time_w = painter.fontMetrics().horizontalAdvance(time);
     painter.drawText(QPointF(mTotalSize.width() - time_w - mCharSize.width(), yCSName - yStep), time);
   }
 }
@@ -721,7 +721,7 @@ void QtPlot::computeMaxPlotArea(QPainter& painter)
 
 void QtPlot::updateCharSize(QPainter& painter)
 {
-  const float charPixelsX = painter.fontMetrics().width("M"), charPixelsY = painter.fontMetrics().height();
+  const float charPixelsX = painter.fontMetrics().horizontalAdvance("M"), charPixelsY = painter.fontMetrics().height();
   mCharSize = QSizeF(charPixelsX, charPixelsY);
 }
 
@@ -818,13 +818,13 @@ void QtPlot::plotTitle(QPainter& painter)
       mx = mAxisX->value2paint(d);
       if (!mAxisX->legalPaint(mx))
         continue;
-      mx -= painter.fontMetrics().width(q_str) / 2;
+      mx -= painter.fontMetrics().horizontalAdvance(q_str) / 2;
     } else if (m.x != -1 || m.y != -1) {
       if (m.text.find_first_of("$%") != std::string::npos)
         q_str = QString::fromStdString(mCrossectionTime.format(m.text, "en", true));
       mx = relative2screenx(m.x);
       my = relative2screeny(m.y);
-      const float w = painter.fontMetrics().width(q_str), border = 2;
+      const float w = painter.fontMetrics().horizontalAdvance(q_str), border = 2;
       const QRectF bgRect(mx-border, my-mCharSize.height(), w+2*border,
           mCharSize.height() + 2*border);
       painter.fillRect(bgRect, Qt::white);
@@ -872,7 +872,7 @@ void QtPlot::plotXLabels(QPainter& painter)
           std::ostringstream xostr;
           xostr << "0" << uname;
           const QString q_str = QString::fromStdString(xostr.str());
-          const float labelW = painter.fontMetrics().width(q_str), lw2 = labelW/2 + mCharSize.width();
+          const float labelW = painter.fontMetrics().horizontalAdvance(q_str), lw2 = labelW/2 + mCharSize.width();
           reflabelXMin = refX - lw2;
           reflabelXMax = refX + lw2;
           painter.drawText(QPointF(refX - labelW/2, labelY), q_str);
@@ -893,7 +893,7 @@ void QtPlot::plotXLabels(QPainter& painter)
             xostr << std::setprecision(precision) << std::setiosflags(std::ios::fixed)
                   << std::abs(v_distance / unit) << uname;
             const QString q_str = QString::fromStdString(xostr.str());
-            const float labelW = painter.fontMetrics().width(q_str), lX = tickX - labelW/2;
+            const float labelW = painter.fontMetrics().horizontalAdvance(q_str), lX = tickX - labelW/2;
             if (lX >= nextLabelX && (lX + labelW < reflabelXMin || lX > reflabelXMax)) {
               painter.drawText(QPointF(lX, labelY), q_str);
               nextLabelX = lX + labelW + mCharSize.width();
@@ -948,8 +948,8 @@ void QtPlot::plotXLabels(QPainter& painter)
 
             const QString x_str = diutil::formatLongitude(mCrossectionPoints.at(i).lonDeg(), 1, 5);
             const QString y_str = diutil::formatLatitude (mCrossectionPoints.at(i).latDeg(), 1, 5);
-            const float labelWx=painter.fontMetrics().width(x_str),
-                labelWy = painter.fontMetrics().width(y_str);
+            const float labelWx=painter.fontMetrics().horizontalAdvance(x_str),
+                labelWy = painter.fontMetrics().horizontalAdvance(y_str);
 
             painter.drawText(tickX - labelWx/2, lY, x_str);
             painter.drawText(tickX - labelWy/2, lY + lines_1, y_str);
@@ -977,7 +977,7 @@ void QtPlot::plotXLabels(QPainter& painter)
             const miutil::miTime& t = mTimePoints.at(i);
             const QString t_str = QString("%1:%2").arg(t.hour(), 2, 10, QLatin1Char('0')).arg(t.min(),   2, 10, QLatin1Char('0'));
             const QString d_str = QString("%1.%2").arg(t.day(),  2, 10, QLatin1Char('0')).arg(t.month(), 2, 10, QLatin1Char('0'));
-            const float labelWt=painter.fontMetrics().width(t_str), labelWd = painter.fontMetrics().width(d_str);
+            const float labelWt=painter.fontMetrics().horizontalAdvance(t_str), labelWd = painter.fontMetrics().horizontalAdvance(d_str);
             painter.drawText(tickX - labelWt/2, labelY, t_str);
             painter.drawText(tickX - labelWd/2, labelY + lines_1, d_str);
             nextLabelX += std::min(labelWt, labelWd) + mCharSize.width();
@@ -1166,7 +1166,7 @@ void QtPlot::plotFrame(QPainter& painter,
     label += QString::number(int(tickValues[i]));
     if (!unitFirst)
       label += unit;
-    const float labelW = painter.fontMetrics().width(label);
+    const float labelW = painter.fontMetrics().horizontalAdvance(label);
     const float labelY = axisY+labelH*0.3;
     painter.drawText(labelLeft - labelW, labelY, label);
     painter.drawText(labelRight,         labelY, label);
@@ -1330,8 +1330,8 @@ void QtPlot::plotDataVectorExample(QPainter& painter, OptionPlot_cp plot)
       .arg(QString::fromStdString(unit_x));
   const QString label_y = QString("%1 %2").arg(label_ey, 0, 'G', 2)
       .arg(QString::fromStdString(unit_y));
-  const int labelwidth_x = painter.fontMetrics().width(label_x),
-      labelwidth_y = painter.fontMetrics().width(label_y);
+  const int labelwidth_x = painter.fontMetrics().horizontalAdvance(label_x),
+      labelwidth_y = painter.fontMetrics().horizontalAdvance(label_y);
 
   const int border = 5, gap = 5;
   int x = relative2screenx(plot->poptions.vector_example_x), y = relative2screeny(plot->poptions.vector_example_y);
