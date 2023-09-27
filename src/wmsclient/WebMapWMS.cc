@@ -367,7 +367,7 @@ bool WebMapWMS::parseLayer(QDomElement& eLayer, std::vector<std::string> styles,
   // loop over SRS/CRS elements to extract known bbox'es
   QDOM_FOREACH_CHILD(eCRS, eLayer, aCRS) {
     if (mVersion == WMS_111)
-      lCRS << eCRS.text().split(" ", QString::SkipEmptyParts);
+      lCRS << eCRS.text().split(" ", Qt::SkipEmptyParts);
     else
       lCRS << eCRS.text();
   }

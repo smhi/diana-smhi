@@ -184,7 +184,7 @@ void FieldDialogAdd::addModelGroup(int modelgroupIndex)
   for (const FieldModelInfo& fdmi : mgr.models) {
     METLIBS_LOG_DEBUG(LOGVAL(fdmi.modelName));
     QStandardItem* child = new QStandardItem(QString::fromStdString(fdmi.modelName));
-    child->setToolTip(QString::fromStdString(fdmi.setupInfo).split(" ", QString::SkipEmptyParts).join("\n"));
+    child->setToolTip(QString::fromStdString(fdmi.setupInfo).split(" ", Qt::SkipEmptyParts).join("\n"));
     child->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     group->appendRow(child);
   }

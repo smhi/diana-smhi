@@ -181,7 +181,7 @@ void VCLines::drawLabels(const QPolygonF& points, contouring::level_t li)
 
   const QString lbl = QString::number(mLevels.value_for_level(li));
 
-  const float lbl_w = mPainter.fontMetrics().width(lbl), lbl_h = mPainter.fontMetrics().height();
+  const float lbl_w = mPainter.fontMetrics().horizontalAdvance(lbl), lbl_h = mPainter.fontMetrics().height();
   if (lbl_h <= 0 or lbl_w <= 0)
     return;
   const float lbl_w2 = lbl_w * lbl_w;

@@ -40,7 +40,7 @@ namespace util {
 
 void updateMaxStringWidth(QPainter& painter, float& w, const std::string& txt)
 {
-  const float txt_w = painter.fontMetrics().width(QString::fromStdString(txt));
+  const float txt_w = painter.fontMetrics().horizontalAdvance(QString::fromStdString(txt));
   miutil::maximize(w, txt_w);
 }
 

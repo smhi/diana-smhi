@@ -235,8 +235,10 @@ bool LocalSetupParser::parseTextInfoFiles(const std::string& sectname)
   const std::string def_font= "auto";
 
   std::vector<std::string> list;
-  if (!miutil::SetupParser::getSection(sectname,list))
-    return true;
+  if (!miutil::SetupParser::getSection(sectname, list)) {
+    return true; // FIXME: is this correct?
+  }
+
 
   for (const std::string line : list) {
     std::string name,filename, type = def_type, font = def_font;
