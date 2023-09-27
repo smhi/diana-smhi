@@ -465,15 +465,31 @@ void SetupParser::writeMsg(const std::string& sectname, int linenum,
 {
   const std::string& error = miutil::to_lower(Error);
 
-  std::map<std::string, SetupSection>::iterator p;
-  if ((p = sectionm.find(sectname)) != sectionm.end()) {
-    int n = p->second.linenum.size();
-    int lnum = (linenum >= 0 && linenum < n) ? p->second.linenum[linenum] : 9999;
-    int m = p->second.filenum.size();
-    int fnum = (linenum >= 0 && linenum < m) ? p->second.filenum[linenum] : 0;
+  auto p = sectionm.find(sectname);
+  if (p != sectionm.end()) {
+     auto n = p->second.linenum.size();
+     auto lnum = (linenum >= 0 && linenum < n) ? p->second.linenum[linenum] : 9999;
+     auto m = p->second.filenum.size();
+     auto fnum = (linenum >= 0 && linenum < m) ? p->second.filenum[linenum] : 0;
 
-    METLIBS_LOG_ERROR("Error in setupfile '" << sfilename.at(fnum) << "' section '" << sectname << "' line " << lnum
-        << ": '" << p->second.strlist.at(linenum) << "', Message:" << msg);
+     auto s = p->second.strlist.size();
+     std::string lineTextOrErrorText;
+     if (linenum >= 0 && linenum < s) {
+       lineTextOrErrorText = p->second.strlist.at(linenum);
+     } else {
+       auto valid_index = (s > 0u) ? (s - 1u) : 0u;
+       std::ostringstream oss;
+       oss << "Invalid index: '" << linenum << "'. "
+           << "strlist size: '" << s << "'. "
+           << "Valid indices are from 0 to " << valid_index << ".";
+       lineTextOrErrorText = oss.str();
+     }
+
+     METLIBS_LOG_ERROR("Error in setupfile '"
+                       << sfilename.at(fnum) << "' section '" << sectname
+                       << "' line " << lnum << ": '"
+                       << lineTextOrErrorText
+                       << "', Message:" << msg);
   } else {
     METLIBS_LOG_ERROR("Internal SetupParser " << error << " in unknown section '"
         << sectname << "', Message:" << msg);
