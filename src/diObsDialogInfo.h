@@ -42,7 +42,7 @@
 struct ObsDialogInfo
 {
 
-  enum ParType { pt_std, pt_knot, pt_temp, pt_rrr };
+  enum ParType { pt_std, pt_knot, pt_temp, pt_rrr, pt_unknown };
   struct Par
   {
     std::string name;
@@ -53,7 +53,7 @@ struct ObsDialogInfo
     int button_low;
     int button_high;
 
-    Par(const std::string& name,  const std::string& button_tip);
+    Par(const std::string& name, const std::string& button_tip);
     Par(const std::string& name, ParType type, int symbol, int precision, const std::string& button_tip, int button_low, int button_high);
   };
 

@@ -131,7 +131,7 @@ const std::vector<ObsDialogInfo::Par> pars = {{"pos", ObsDialogInfo::pt_std, -1,
                                               {"RRR_6", ObsDialogInfo::pt_rrr, -1, 0, "precipitation past 6 hours", -1, 100},
                                               {"RRR_12", ObsDialogInfo::pt_rrr, -1, 0, "precipitation past 12 hours", -1, 100},
                                               {"RRR_24", ObsDialogInfo::pt_rrr, -1, 0, "precipitation past 24 hours", -1, 100},
-																							{"PIT", ObsDialogInfo::pt_std, -1, 1, "precipitation intensity average past minute", -1, 100},
+                                              {"PIT", ObsDialogInfo::pt_std, -1, 1, "precipitation intensity average past minute", -1, 100},
                                               {"quality", ObsDialogInfo::pt_std, -1, 0, "quality", -1, 100},
                                               {"HHH", ObsDialogInfo::pt_std, -1, 0, "geopotential", 0, 50},
                                               {"QI", ObsDialogInfo::pt_std, -1, 2, "Percent confidence", 0, 100},
@@ -184,7 +184,7 @@ ObsDialogInfo::Par ObsDialogInfo::findPar(const std::string& name)
     if (p.name == name)
       return p;
   }
-  return Par(name,name);
+  return Par(name, name);
 }
 
 // static

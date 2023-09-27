@@ -46,9 +46,10 @@
 #define MILOGGER_CATEGORY "diana.ObsManager"
 #include <miLogger/miLogging.h>
 
-using std::vector;
 using miutil::miTime;
 using miutil::SetupParser;
+
+using std::vector;
 
 ObsManager::ObsManager()
 {
@@ -262,7 +263,7 @@ bool ObsManager::parseFilesSetup()
   std::vector<std::string> sect_obs;
   if (!SetupParser::getSection(obs_name, sect_obs)) {
     METLIBS_LOG_WARN(obs_name << " section not found");
-    return true;
+    return true; // FIXME: is this intentional?
   }
 
   // ********  Common to all plot types **********************
@@ -347,7 +348,7 @@ bool ObsManager::parsePrioritySetup()
 
     for (unsigned int i = 0; i < sect_pri.size(); i++) {
       name = "";
-      std::string file = "";
+      std::string file;
 
       tokens = miutil::split_protected(sect_pri[i], '"', '"', " ", true);
       for (unsigned int j = 0; j < tokens.size(); j++) {
@@ -391,13 +392,13 @@ bool ObsManager::parseCriteriaSetup()
     for (const std::string& soc : sect_obs_crit) {
       std::vector<std::string> token = miutil::split(soc, "=");
       if (token.size() == 2 && miutil::to_lower(token[0]) == "plottype") {
-        if (critList.criteria.size()) {
+        if (!critList.criteria.empty()) {
           criteriaList[plottype].push_back(critList);
           critList.criteria.clear();
         }
         plottype = miutil::to_lower(token[1]);
       } else if (token.size() == 2 && miutil::to_lower(token[0]) == "name") {
-        if (critList.criteria.size()) {
+        if (!critList.criteria.empty()) {
           criteriaList[plottype].push_back(critList);
           critList.criteria.clear();
         }
@@ -406,8 +407,9 @@ bool ObsManager::parseCriteriaSetup()
         critList.criteria.push_back(soc);
       }
     }
-    if (critList.criteria.size())
+    if (!critList.criteria.empty()) {
       criteriaList[plottype].push_back(critList);
+    }
   }
   return true;
 }
@@ -480,40 +482,50 @@ bool ObsManager::parseParameterSetup()
 
   const std::string obs_parameters_data = "OBSERVATION_PARAMETERS";
   std::vector<std::string> sect_parameters_data;
-  if (!SetupParser::getSection(obs_parameters_data, sect_parameters_data))
+  if (!SetupParser::getSection(obs_parameters_data, sect_parameters_data)) {
+    //METLIBS_LOG_ERROR("");
     return false;
+  }
 
   for (const std::string& sptd : sect_parameters_data) {
     std::vector<std::string> token = miutil::split(sptd, "=");
-      if ((token.size() == 2) && (token[0] == "parameter")) {
-        std::vector <std::string> values = miutil::split(token[1], ",");
-        
-        if (values.size() == 7) {
-          // We must trim for whitespace
-          for (size_t i = 0; i < values.size(); i++) {
-            std::cerr << "'" << values[i] << "'" << std::endl;
-          }
-          ObsDialogInfo::ParType ptype;
-          // enum ParType { pt_std, pt_knot, pt_temp, pt_rrr };
-          if (values[1] == "pt_std") {
-            ptype = ObsDialogInfo::pt_std;
-          } else if(values[1] == "pt_knot") {
-            ptype = ObsDialogInfo::pt_knot;
-          } else if(values[1] == "pt_temp") {
-            ptype = ObsDialogInfo::pt_temp;
-          } else if(values[1] == "pt_rrr") {
-            ptype = ObsDialogInfo::pt_rrr;
-          }
-          ObsDialogInfo::Par pars(values[0], ptype, miutil::to_int(values[2]), miutil::to_int(values[3]), values[4], miutil::to_int(values[5]), miutil::to_int(values[6]));
-          setupParameters_.push_back(pars);
-        } else {
-          METLIBS_LOG_WARN("ERROR in OBSERVATION_PARAMETERS, wrong no of values for parameter key");
-          continue;
-        }
-      } else {
-        METLIBS_LOG_WARN("ERROR in OBSERVATION_PARAMETERS, parameter key missing");
-        continue;
-      }
+    if (token.size() != 2u || token[0] != "parameter") {
+      METLIBS_LOG_WARN("OBSERVATION_PARAMETERS, Parameter key missing.");
+      //continue;
+      return false;
     }
+
+    std::vector<std::string> values = miutil::split(token[1], ",");
+    if (values.size() != 7u) {
+      METLIBS_LOG_WARN("OBSERVATION_PARAMETERS, Wrong number of values for parameter key.");
+      //continue;
+      return false;
+    }
+
+    // Trim whitespaces
+    for (auto& val : values) {
+      miutil::trim(val);
+    }
+    // enum ParType { pt_std, pt_knot, pt_temp, pt_rrr, pt_unknown };
+    ObsDialogInfo::ParType ptype = ObsDialogInfo::pt_unknown;
+    if (values[1] == "pt_std") {
+      ptype = ObsDialogInfo::pt_std;
+    } else if (values[1] == "pt_knot") {
+      ptype = ObsDialogInfo::pt_knot;
+    } else if (values[1] == "pt_temp") {
+      ptype = ObsDialogInfo::pt_temp;
+    } else if (values[1] == "pt_rrr") {
+      ptype = ObsDialogInfo::pt_rrr;
+    } else {
+      METLIBS_LOG_ERROR("OBSERVATION_PARAMETERS, Unknown parameter type: " << values[1]);
+      //continue;
+      return false;
+    }
+
+
+    ObsDialogInfo::Par pars(values[0], ptype, miutil::to_int(values[2]), miutil::to_int(values[3]),
+                            values[4], miutil::to_int(values[5]), miutil::to_int(values[6]));
+    setupParameters_.push_back(pars);
+  }
   return true;
 }
