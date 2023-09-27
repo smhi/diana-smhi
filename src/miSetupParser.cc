@@ -472,8 +472,8 @@ void SetupParser::writeMsg(const std::string& sectname, int linenum,
     int m = p->second.filenum.size();
     int fnum = (linenum >= 0 && linenum < m) ? p->second.filenum[linenum] : 0;
 
-    METLIBS_LOG_ERROR("Error in setupfile '" << sfilename[fnum] << "' section '" << sectname << "' line " << lnum
-        << ": '" << p->second.strlist[linenum] << "', Message:" << msg);
+    METLIBS_LOG_ERROR("Error in setupfile '" << sfilename.at(fnum) << "' section '" << sectname << "' line " << lnum
+        << ": '" << p->second.strlist.at(linenum) << "', Message:" << msg);
   } else {
     METLIBS_LOG_ERROR("Internal SetupParser " << error << " in unknown section '"
         << sectname << "', Message:" << msg);
