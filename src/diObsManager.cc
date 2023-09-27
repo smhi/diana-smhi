@@ -507,15 +507,15 @@ bool ObsManager::parseParameterSetup()
       miutil::trim(val);
     }
     // enum ParType { pt_std, pt_knot, pt_temp, pt_rrr, pt_unknown };
-    ObsDialogInfo::ParType ptype = ObsDialogInfo::pt_unknown;
+    ObsDialogInfo::ParType ptype = ObsDialogInfo::ParType::pt_unknown;
     if (values[1] == "pt_std") {
-      ptype = ObsDialogInfo::pt_std;
+      ptype = ObsDialogInfo::ParType::pt_std;
     } else if (values[1] == "pt_knot") {
-      ptype = ObsDialogInfo::pt_knot;
+      ptype = ObsDialogInfo::ParType::pt_knot;
     } else if (values[1] == "pt_temp") {
-      ptype = ObsDialogInfo::pt_temp;
+      ptype = ObsDialogInfo::ParType::pt_temp;
     } else if (values[1] == "pt_rrr") {
-      ptype = ObsDialogInfo::pt_rrr;
+      ptype = ObsDialogInfo::ParType::pt_rrr;
     } else {
       METLIBS_LOG_ERROR("OBSERVATION_PARAMETERS, Unknown parameter type: " << values[1]);
       //continue;
