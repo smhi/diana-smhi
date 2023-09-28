@@ -483,7 +483,7 @@ bool ObsManager::parseParameterSetup()
   const std::string obs_parameters_data = "OBSERVATION_PARAMETERS";
   std::vector<std::string> sect_parameters_data;
   if (!SetupParser::getSection(obs_parameters_data, sect_parameters_data)) {
-    //METLIBS_LOG_ERROR("");
+    METLIBS_LOG_ERROR("FIXME: BETTER ERROR MSG");
     return false;
   }
 
@@ -491,15 +491,13 @@ bool ObsManager::parseParameterSetup()
     std::vector<std::string> token = miutil::split(sptd, "=");
     if (token.size() != 2u || token[0] != "parameter") {
       METLIBS_LOG_WARN("OBSERVATION_PARAMETERS, Parameter key missing.");
-      //continue;
-      return false;
+      continue;
     }
 
     std::vector<std::string> values = miutil::split(token[1], ",");
     if (values.size() != 7u) {
       METLIBS_LOG_WARN("OBSERVATION_PARAMETERS, Wrong number of values for parameter key.");
-      //continue;
-      return false;
+      continue;
     }
 
     // Trim whitespaces
@@ -518,8 +516,7 @@ bool ObsManager::parseParameterSetup()
       ptype = ObsDialogInfo::ParType::pt_rrr;
     } else {
       METLIBS_LOG_ERROR("OBSERVATION_PARAMETERS, Unknown parameter type: " << values[1]);
-      //continue;
-      return false;
+      continue;
     }
 
 
