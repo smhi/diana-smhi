@@ -28,6 +28,8 @@
 */
 
 #include "diObsService.h"
+#include "diObsDialogInfo.h"
+#include "diObsManager.h"
 
 #include "service/diObsGRPCServiceUtils.h"
 #include "service/diObsGRPCUtils.h"
@@ -64,6 +66,7 @@ diana_obs_v0::Par::Type fromParType(const ObsDialogInfo::ParType& t)
   case ObsDialogInfo::pt_rrr:  return diana_obs_v0::Par::pt_rrr;
   // clang-format on
   }
+  return diana_obs_v0::Par::pt_std;
 }
 
 void setStatusFromException(diana_obs_v0::Status& status, std::exception& ex)

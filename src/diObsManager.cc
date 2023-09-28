@@ -51,6 +51,8 @@ using miutil::SetupParser;
 
 using std::vector;
 
+std::vector<ObsDialogInfo::Par> ObsManager::setupParameters_;
+
 ObsManager::ObsManager()
 {
   useArchive = false;
@@ -174,7 +176,7 @@ plottimes_t ObsManager::getTimes(const std::vector<std::string>& readernames, bo
 static void addButtons(ObsDialogInfo::PlotType& pt, const std::vector<std::string>& parnames)
 {
   for (const std::string& parname : parnames) {
-    const ObsDialogInfo::Par p = ObsDialogInfo::findPar(parname);
+    const ObsDialogInfo::Par p = ObsManager::findPar(parname);
     pt.addButton(p.name, p.button_tip, p.button_low, p.button_high);
   }
 }
@@ -475,6 +477,20 @@ bool ObsManager::parsePlotTypeSetup()
   return true;
 }
 
+const std::vector<ObsDialogInfo::Par>& ObsManager::vparam()
+{
+  return setupParameters_;
+}
+
+ObsDialogInfo::Par ObsManager::findPar(const std::string& name)
+{
+  for (const ObsDialogInfo::Par& p : vparam()) {
+    if (p.name == name)
+      return p;
+  }
+  return ObsDialogInfo::Par(name, name);
+}
+
 bool ObsManager::parseParameterSetup()
 {
   METLIBS_LOG_SCOPE();
@@ -483,7 +499,7 @@ bool ObsManager::parseParameterSetup()
   const std::string obs_parameters_data = "OBSERVATION_PARAMETERS";
   std::vector<std::string> sect_parameters_data;
   if (!SetupParser::getSection(obs_parameters_data, sect_parameters_data)) {
-    METLIBS_LOG_ERROR("FIXME: BETTER ERROR MSG");
+    METLIBS_LOG_ERROR("OBSERVATION_PARAMETERS section is missing!");
     return false;
   }
 
