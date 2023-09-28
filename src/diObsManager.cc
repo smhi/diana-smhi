@@ -495,8 +495,11 @@ bool ObsManager::parseParameterSetup()
     }
 
     std::vector<std::string> values = miutil::split(token[1], ",");
-    if (values.size() != 7u) {
-      METLIBS_LOG_WARN("OBSERVATION_PARAMETERS, Wrong number of values for parameter key.");
+    if (values.size() != 7u || values.empty()) {
+      auto valueAtZero = (!values.empty()) ? values.at(0) : "values is empty";
+      METLIBS_LOG_WARN("OBSERVATION_PARAMETERS\n\tWrong number of values for parameter key.\n\t\t"
+                       << "size = '" << values.size() << "'\n\t\t"
+                       << "values.at(0) = '" << valueAtZero << "'");
       continue;
     }
 
