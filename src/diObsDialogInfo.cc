@@ -82,7 +82,7 @@ ObsDialogInfo::Par::Par(const std::string& name_, ParType type_, int symbol_, in
     , button_high(button_high_)
 {
 }
-
+#if 0
 const std::vector<ObsDialogInfo::Par> pars = {
     {"pos", ObsDialogInfo::ParType::pt_std, -1, 0, "Position", 0, 0},
     {"dd", ObsDialogInfo::ParType::pt_std, -1, 0, "wind direction", 0, 360},
@@ -172,13 +172,14 @@ const std::vector<ObsDialogInfo::Par> pars = {
     {"QWSG", ObsDialogInfo::ParType::pt_std, -1, 0, "?", 0, 1},
     {"GWI", ObsDialogInfo::ParType::pt_std, -1, 0, "General weather indicator", 0, 1}
 };
+#endif
 
 void ObsDialogInfo::addPlotType(const ObsDialogInfo::PlotType& p, bool addIfNoReaders)
 {
   if (addIfNoReaders || !p.readernames.empty())
     plottype.push_back(p);
 }
-
+#if 0
 // static
 ObsDialogInfo::Par ObsDialogInfo::findPar(const std::string& name)
 {
@@ -194,6 +195,7 @@ const std::vector<ObsDialogInfo::Par>& ObsDialogInfo::vparam()
 {
   return pars;
 }
+#endif
 
 // static
 ObsDialogInfo::Misc ObsDialogInfo::miscFromText(const std::string& text)

@@ -43,6 +43,8 @@
 #include "util/string_util.h"
 #include "util/time_util.h"
 
+#include "diObsManager.h"
+
 #include <mi_fieldcalc/MetConstants.h>
 #include <mi_fieldcalc/math_util.h>
 
@@ -3513,7 +3515,7 @@ void ObsPlot::decodeCriteria(const std::string& critStr)
         continue;
       parameter = sstr[0];
       limit = atof(sstr[1].c_str());
-      if (!unit_ms && ObsDialogInfo::findPar(parameter).type == ObsDialogInfo::pt_knot) {
+      if (!unit_ms && ObsManager::findPar(parameter).type == ObsDialogInfo::pt_knot) {
         limit = miutil::knots2ms(limit);
       }
     } else {
