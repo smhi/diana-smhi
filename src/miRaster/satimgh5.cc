@@ -1368,6 +1368,7 @@ int metno::satimgh5::getAttributeFromGroup(hid_t& dataset, int index, string pat
   vector<string> splitString;
 
   attr = H5Aopen_idx(dataset, index);
+	
   atype = H5Aget_type(attr);
   aspace = H5Aget_space(attr);
   status = H5Aget_name(attr, buf, memb);
@@ -1395,9 +1396,12 @@ int metno::satimgh5::getAttributeFromGroup(hid_t& dataset, int index, string pat
       break;
 
     case H5T_STRING:
+      H5A_info_t ainfo;
+      H5Aget_info	(	attr,& ainfo );
+      METLIBS_LOG_DEBUG("data_size: " << ainfo.data_size);
       ret = H5Aread(attr, atype, string_value);
-
       if (!ret) {
+        string_value[ainfo.data_size] = '\0';
         value = string(string_value);
       }
       break;

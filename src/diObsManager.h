@@ -90,6 +90,7 @@ private:
   bool parseCriteriaSetup();
   bool parsePopupWindowSetup();
   bool parsePlotTypeSetup();
+  bool parseParameterSetup();
 
 public:
   ObsManager();
@@ -116,6 +117,11 @@ public:
   plottimes_t getObsTimes(const std::set<std::string>& readernames);
 
   bool updateTimes(ObsPlot* op);
+  
+  static std::vector<ObsDialogInfo::Par> setupParameters_;
+
+  static ObsDialogInfo::Par findPar(const std::string& name);
+  static const std::vector<ObsDialogInfo::Par>& vparam();
 };
 
 #endif

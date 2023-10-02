@@ -49,6 +49,8 @@ using std::vector;
 using miutil::miTime;
 using miutil::SetupParser;
 
+std::vector<ObsDialogInfo::Par> ObsManager::setupParameters_;
+
 ObsManager::ObsManager()
 {
   useArchive = false;
@@ -169,7 +171,7 @@ plottimes_t ObsManager::getTimes(const std::vector<std::string>& readernames, bo
 static void addButtons(ObsDialogInfo::PlotType& pt, const std::vector<std::string>& parnames)
 {
   for (const std::string& parname : parnames) {
-    const ObsDialogInfo::Par p = ObsDialogInfo::findPar(parname);
+    const ObsDialogInfo::Par p = ObsManager::findPar(parname);
     pt.addButton(p.name, p.button_tip, p.button_low, p.button_high);
   }
 }
@@ -245,6 +247,7 @@ bool ObsManager::parseSetup()
   parseCriteriaSetup();
   parsePopupWindowSetup();
   parsePlotTypeSetup();
+  parseParameterSetup();
   return true;
 }
 
@@ -463,4 +466,73 @@ bool ObsManager::parsePlotTypeSetup()
   }
 
   return true;
+}
+
+bool ObsManager::parseParameterSetup()
+{
+  METLIBS_LOG_SCOPE();
+  setupParameters_.clear();
+
+  const std::string obs_parameters_data = "OBSERVATION_PARAMETERS";
+  std::vector<std::string> sect_parameters_data;
+  if (!SetupParser::getSection(obs_parameters_data, sect_parameters_data)) {
+    METLIBS_LOG_ERROR("OBSERVATION_PARAMETERS section is missing!");
+    return false;
+  }
+
+  for (const std::string& sptd : sect_parameters_data) {
+    std::vector<std::string> token = miutil::split(sptd, "=");
+    if (token.size() != 2u || token[0] != "parameter") {
+      METLIBS_LOG_WARN("OBSERVATION_PARAMETERS, Parameter key missing.");
+      continue;
+    }
+
+    std::vector<std::string> values = miutil::split(token[1], ",");
+    if (values.size() != 7u || values.empty()) {
+      auto valueAtZero = (!values.empty()) ? values.at(0) : "values is empty";
+      METLIBS_LOG_WARN("OBSERVATION_PARAMETERS\n\tWrong number of values for parameter key.\n\t\t"
+                       << "size = '" << values.size() << "'\n\t\t"
+                       << "values.at(0) = '" << valueAtZero << "'");
+      continue;
+    }
+
+    // Trim whitespaces
+    for (auto& val : values) {
+      miutil::trim(val);
+    }
+   
+    ObsDialogInfo::ParType ptype = ObsDialogInfo::ParType::pt_std;
+    if (values[1] == "pt_std") {
+      ptype = ObsDialogInfo::ParType::pt_std;
+    } else if (values[1] == "pt_knot") {
+      ptype = ObsDialogInfo::ParType::pt_knot;
+    } else if (values[1] == "pt_temp") {
+      ptype = ObsDialogInfo::ParType::pt_temp;
+    } else if (values[1] == "pt_rrr") {
+      ptype = ObsDialogInfo::ParType::pt_rrr;
+    } else {
+      METLIBS_LOG_ERROR("OBSERVATION_PARAMETERS, Unknown parameter type: " << values[1]);
+      continue;
+    }
+
+
+    ObsDialogInfo::Par pars(values[0], ptype, miutil::to_int(values[2]), miutil::to_int(values[3]),
+                            values[4], miutil::to_int(values[5]), miutil::to_int(values[6]));
+    setupParameters_.push_back(pars);
+  }
+  return true;
+}
+
+const std::vector<ObsDialogInfo::Par>& ObsManager::vparam()
+{
+  return setupParameters_;
+}
+
+ObsDialogInfo::Par ObsManager::findPar(const std::string& name)
+{
+  for (const ObsDialogInfo::Par& p : vparam()) {
+    if (p.name == name)
+      return p;
+  }
+  return ObsDialogInfo::Par(name, name);
 }

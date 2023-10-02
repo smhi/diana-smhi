@@ -57,9 +57,6 @@ struct ObsDialogInfo
     Par(const std::string& name, ParType type, int symbol, int precision, const std::string& button_tip, int button_low, int button_high);
   };
 
-  static Par findPar(const std::string& name);
-  static const std::vector<Par>& vparam();
-
   /// list of prioritized stations
   struct PriorityList
   {

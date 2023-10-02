@@ -29,6 +29,8 @@
 
 #include "diObsReader.h"
 
+#include "diObsManager.h"
+
 #include "util/diKeyValue.h"
 #include "util/misc_util.h"
 
@@ -84,7 +86,7 @@ bool ObsReader::configure(const std::string& key, const std::string& value)
 
 std::vector<ObsDialogInfo::Par> ObsReader::getParameters()
 {
-  return ObsDialogInfo::vparam();
+  return ObsManager::vparam();
 }
 
 PlotCommand_cpv ObsReader::getExtraAnnotations()
