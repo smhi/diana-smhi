@@ -95,11 +95,13 @@ bool Area::setAreaFromString(const std::string& areaString)
 
   const char key_name[] = "name";
   const char key_proj[] = "proj4string";
+  const char key_WKT[] = "wktstring";
   const char key_rectangle[] = "rectangle";
   const char key_rect[] = "rect";
 
   std::string rectangleStr;
   std::string projStr;
+  std::string wktStr;
   bool angles_deg = false;
 
   // split on blank, preserve ""
@@ -115,6 +117,9 @@ bool Area::setAreaFromString(const std::string& areaString)
       } else if (key==key_proj){
         projStr = stokens[1];
         diutil::remove_quote(projStr);
+      } else if (key==key_WKT){
+        wktStr = stokens[1];
+        diutil::remove_quote(wktStr);
       } else if (key==key_rectangle){
         rectangleStr = stokens[1];
         angles_deg = false;
@@ -125,13 +130,16 @@ bool Area::setAreaFromString(const std::string& areaString)
     }
   }
 
-  if (projStr.empty()) {
+  if (projStr.empty() && wktStr.empty()) {
     //Undefined projections (used in model/sat area)
     return true;
   }
-
-  if (!proj.setFromString(projStr))
-    return false;
+  if (!projStr.empty())
+    if (!proj.setFromString(projStr))
+      return false;
+  if(!wktStr.empty())
+    if (!proj.setFromWKT(wktStr))
+      return false;
 
   if (!rect.setRectangle(rectangleStr))
     return false;
