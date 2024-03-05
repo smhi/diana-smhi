@@ -46,8 +46,9 @@ namespace {
 long modificationtime(const std::string& filename)
 {
   pu_struct_stat buf;
-  if (pu_stat(filename.c_str(), &buf) != 0)
+  if (pu_stat(filename.c_str(), &buf) != 0) {
     return -1;
+  }
   return (long)buf.st_mtime;
 }
 
@@ -187,13 +188,16 @@ bool ObsReaderFile::checkForUpdates(bool useArchive)
   }
 
   // return true if timeLists are different
-  if (fileInfo.size() != oldfileInfo.size())
+  if (fileInfo.size() != oldfileInfo.size()) {
     return true;
+  }
 
   for (size_t i = 0; i < fileInfo.size(); i++) {
-    const FileInfo &fi = fileInfo[i], &ofi = oldfileInfo[i];
-    if ((fi.time != ofi.time) || (fi.mtime != ofi.mtime))
+    const FileInfo &fi = fileInfo[i];
+    const FileInfo &ofi = oldfileInfo[i];
+    if ((fi.time != ofi.time) || (fi.mtime != ofi.mtime)) {
       return true;
+    }
   }
   return false;
 }

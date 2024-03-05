@@ -571,15 +571,18 @@ void ObsRoad::parseHeaderBrackets(const std::string& str)
 void ObsRoad::parseNewHeaderFormat(const std::string& str)
 {
   METLIBS_LOG_SCOPE(LOGVAL(str));
-  vector<string> pstr = miutil::split(str, ";");
+  std::vector<std::string> pstr = miutil::split(str, ";");
   // Check if format is incorrect
-  if (pstr.size() <= 1)
+  if (pstr.size() <= 1) {
+    METLIBS_LOG_WARN("Format for new header is incorrect.");
     return;
+  }
   
   for (size_t j = 0; j < pstr.size(); j++)
   {
 	  m_columnName.push_back(pstr[j]);
 	  // Make index to headeer items and save this.
+ 	  METLIBS_LOG_DEBUG("pstr[j]='" << pstr[j] <<"'");
 	  asciiColumn[pstr[j]] = j;
 	  // For now, this will be enough
 	  // Specify this in setup file
@@ -695,16 +698,20 @@ void ObsRoad::decodeNewHeader()
   // New header format: Time;Offset;StationId;StationName;StationType;Parameter;StatisticsFormula;SamplingTime;Longitud;Latitud;Height;Presentation Value;Database Value;Quality;Nordklim;Restriction;Value Origin;Level Parameter;Level from;Level to;ClimateStationId;ClimateCtationName;NationalStationId;NationalStationName;WmoStationId;WmoStationName;IcaoStationId;IcaoStationName;OperatingMode;
   // Always the same 
 
-  vector<string> vstr;
-  for (size_t i = 0; i < lines.size(); ++i) {
+  std::vector<std::string> vstr;
+  for (size_t i = 0; i < lines.size(); i++) {
     std::string& line = lines[i]; // must be reference here, used later in decodeData
 	// Check for invalid format in data file.
-    if (line.empty())
+    if (line.empty()) {
+      METLIBS_LOG_ERROR("line is empty");
       return;
+    }
     // In the new format, heading is always line no 0.
-    if (i == 1)
+    if (i == 1) {
       // end of header, start data
+      METLIBS_LOG_DEBUG("END OF HEADER START OF DATA.");
       break;
+    }
     METLIBS_LOG_DEBUG(LOGVAL(line));
     vstr.push_back(line);
   }
@@ -723,8 +730,9 @@ void ObsRoad::decodeNewHeader()
   // parse header
   // Makes column index for asciiColumn
  
-  for (size_t i = 0; i < vstr.size(); ++i)
+  for (size_t i = 0; i < vstr.size(); i++) {
     parseNewHeaderFormat(vstr[i]);
+  }
 
   METLIBS_LOG_DEBUG("#columns: " << m_columnName.size() << LOGVAL(asciiSkipDataLines));
   
@@ -1384,7 +1392,7 @@ void ObsRoad::decodeData()
       else
         continue;
     }
-#ifdef DEBUG_OBSDATA
+#ifdef DEBUG_OBSDATA_1
     // Produces a lot of output...
     METLIBS_LOG_INFO("obsData.id: "
                      << ", " << obsData.id);
@@ -1608,7 +1616,7 @@ void ObsRoad::decodeNewData()
 {
   METLIBS_LOG_SCOPE();
   
-  const bool isoTime = 1;/*asciiColumn.count("Time")*/;
+  const bool isoTime = true;/*asciiColumn.count("\xef\xbb\xbfTime")*/;
   const bool useTime = isoTime || asciiColumn.count("hour");
   const bool date_ymd = asciiColumn.count("year") && asciiColumn.count("month") && asciiColumn.count("day");
   const bool date_column = asciiColumn.count("date");
