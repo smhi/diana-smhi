@@ -54,8 +54,7 @@ void RasterSat::rasterPixels(int n, const diutil::PointD& xy0, const diutil::Poi
   int li = -1, lx = -1, ly = -1;
 #endif
   for (int i = 0; i < n; ++i, ixy += step) {
-    const double dxy = 0.5;
-    const int ix = int(ixy.x() - dxy), iy = int(ixy.y() + dxy);
+    const int ix = int(ixy.x()), iy = int(ixy.y());
     if (ix < 0 || ix >= nx || iy < 0 || iy >= ny)
       continue;
 #ifdef REMEMBER
