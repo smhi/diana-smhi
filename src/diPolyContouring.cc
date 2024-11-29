@@ -418,8 +418,16 @@ void DianaLines::paint_polygons()
           setFillColour(mPlotOptions.palettecolours[cidx]);
         else
           setFillColour(mPlotOptions.fillcolour);
-        if (cidx < npatterns)
+        // FIXME: Palette and pattern, what colours do we want ?
+        if (cidx < npatterns) {
+          // If no palette, use patterncolour
+          if (!ncolours && !ncolours_cold) {
+            if (mPlotOptions.patterncolour.Name() != "blank") {
+              setFillColour(mPlotOptions.patterncolour);
+            }
+          }
           setFillPattern(mPlotOptions.patterns[cidx]);
+        }
         else
           setFillPattern(NOPATTERN);
       } else {
@@ -436,6 +444,12 @@ void DianaLines::paint_polygons()
         }
         if (li >= 0 and npatterns) {
           const int pidx = diutil::find_index(mPlotOptions.repeat, npatterns, li - 1);
+          // If no palette, use patterncolour
+          if (!ncolours && !ncolours_cold) {
+            if (mPlotOptions.patterncolour.Name() != "blank") {
+              setFillColour(mPlotOptions.patterncolour);
+            }
+          }
           setFillPattern(mPlotOptions.patterns[pidx]);
         } else {
           setFillPattern(NOPATTERN);

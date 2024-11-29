@@ -470,10 +470,12 @@ void FieldDialogStyle::CreateAdvanced()
   shadingcoldSpinBox->setSpecialValueText(tr("Auto"));
 
   // pattern
+  // FIXME: connect to slot
   patternComboBox = PatternBox(widgetAdv, patternInfo, false, 0, tr("Off").toStdString(), true);
   patternComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
 
   // pattern colour
+  // FIXME: connect to slot
   patternColourBox = ColourBox(widgetAdv, false, 0, tr("Auto").toStdString(), true);
 
   // alpha blending
@@ -871,9 +873,9 @@ void FieldDialogStyle::setFromPlotOptions(const PlotOptions& po, int dimension)
 
   // pattern colour
   if (!po.patternname.empty()) {
-    SetCurrentItemColourBox(patternColourBox, po.fillcolour.Name());
+    SetCurrentItemColourBox(patternColourBox, po.patterncolour.Name());
   } else {
-    patternColourBox->setCurrentIndex(0);
+    SetCurrentItemColourBox(patternColourBox, po.fillcolour.Name());
   }
 
   // table
@@ -1172,10 +1174,17 @@ void FieldDialogStyle::setToPlotOptions(PlotOptions& po)
 
   if (patternComboBox->currentIndex() > 0) {
     po.set_patterns(patternInfo[patternComboBox->currentIndex() - 1].name);
-  } else if (patternColourBox->currentIndex() > 0) {
-    po.fillcolour = Colour(patternColourBox->currentText().toStdString());
   } else {
     po.set_patterns(OFF);
+  }
+  if (patternColourBox->currentIndex() > 0) {
+    if (patternComboBox->currentIndex() > 0) {
+      po.patterncolour = Colour(patternColourBox->currentText().toStdString());
+    } else {
+      po.fillcolour = Colour(patternColourBox->currentText().toStdString());
+    }
+  } else {
+    po.patterncolour = Colour("blank");
   }
 
   if (threeColourBox[0]->currentIndex() != 0 && threeColourBox[1]->currentIndex() != 0 && threeColourBox[2]->currentIndex() != 0) {

@@ -246,7 +246,7 @@ public:
 public:
   bool options_1;
   bool options_2;
-  Colour textcolour,linecolour,linecolour_2,fillcolour,bordercolour;
+  Colour textcolour,linecolour,linecolour_2,fillcolour,patterncolour,bordercolour;
   std::vector<Colour> colours;
   std::vector<Colour> palettecolours;
   std::vector<Colour> palettecolours_cold;

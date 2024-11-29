@@ -4226,6 +4226,11 @@ void fillContours(DiGLPainter* gl, std::vector<ContourLine*>& contourlines, int 
             }
 
             if(npatterns>0){
+              if (!ncolours_cold && !ncolours) {
+                if (poptions.patterncolour.Name() != "blank") {
+                  gl->setColour(poptions.patterncolour);
+                }
+              }
               ImageGallery ig;
               gl->Enable(DiGLPainter::gl_POLYGON_STIPPLE);
               i= ivalue%npatterns;

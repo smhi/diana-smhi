@@ -360,6 +360,7 @@ PlotOptions::PlotOptions()
     , linecolour(Colour::BLACK)
     , linecolour_2(Colour::BLACK)
     , fillcolour(Colour::BLACK)
+    , patterncolour(Colour("blank"))
     , bordercolour(Colour::BLACK)
     , colours({linecolour})
     , table(true)
@@ -431,6 +432,7 @@ bool PlotOptions::operator==(const PlotOptions& o) const
     && (linecolour == o.linecolour)
     && (linecolour_2 == o.linecolour_2)
     && (fillcolour == o.fillcolour)
+    && (patterncolour == o.patterncolour)
     && (bordercolour == o.bordercolour)
     && (colours == o.colours)
     && (palettecolours == o.palettecolours)
@@ -544,8 +546,11 @@ bool PlotOptions::parsePlotOption(const miutil::KeyValue& kv, PlotOptions& po)
   } else if (key == key_tcolour) {
     po.textcolour = Colour(value);
 
-  } else if (key == key_fcolour || key == key_pcolour) {
+  } else if (key == key_fcolour) {
     po.fillcolour = Colour(value);
+    
+  } else if (key == key_pcolour) {
+    po.patterncolour = Colour(value);
 
   } else if (key == key_bcolour) {
     po.bordercolour = Colour(value);
@@ -1212,7 +1217,7 @@ miutil::KeyValue_v PlotOptions::toKeyValueListForAnnotation() const
   miutil::KeyValue_v ostr;
   miutil::add(ostr, key_tcolour, textcolour.Name());
   miutil::add(ostr, key_fcolour, fillcolour.Name());
-  miutil::add(ostr, key_pcolour, fillcolour.Name()); // TODO why is this the same as fcolour?
+  miutil::add(ostr, key_pcolour, patterncolour.Name());
   miutil::add(ostr, key_bcolour, bordercolour.Name());
   miutil::add(ostr, key_fontname, fontname);
   miutil::add(ostr, key_fontface, fontface);
@@ -1275,7 +1280,7 @@ miutil::KeyValue_v PlotOptions::diff(const PlotOptions& from, const PlotOptions&
   }
   add_diff(ostr, key_tcolour, from.textcolour, to.textcolour);
   add_diff(ostr, key_fcolour, from.fillcolour, to.fillcolour);
-  // pcolour / patterncolour is the same as fillcolour
+  add_diff(ostr, key_pcolour, from.patterncolour, to.patterncolour);
   add_diff(ostr, key_bcolour, from.bordercolour, to.bordercolour);
 
   add_diff(ostr, key_options_2, from.options_2, to.options_2);
