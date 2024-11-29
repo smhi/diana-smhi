@@ -442,7 +442,7 @@ void DianaLines::paint_polygons()
         } else {
           setFillColour(mPlotOptions.fillcolour);
         }
-        if (li >= 0 and npatterns) {
+        if (npatterns) {
           const int pidx = diutil::find_index(mPlotOptions.repeat, npatterns, li - 1);
           // If no palette, use patterncolour
           if (!ncolours && !ncolours_cold) {
