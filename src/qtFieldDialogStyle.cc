@@ -1176,6 +1176,7 @@ void FieldDialogStyle::setToPlotOptions(PlotOptions& po)
     po.set_patterns(patternInfo[patternComboBox->currentIndex() - 1].name);
   } else {
     po.set_patterns(OFF);
+    patternColourBox->setCurrentIndex(0);
   }
   if (patternColourBox->currentIndex() > 0) {
     if (patternComboBox->currentIndex() > 0) {
