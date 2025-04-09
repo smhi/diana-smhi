@@ -622,6 +622,13 @@ Field_p FieldManager::makeField(const FieldRequest& frq)
     fout->palette = pgc->getVariable(frq.refTime, frq.palette);
   }
 
+  // Sanity check. These may differ if we have accumulated flux.
+  if (fout->validFieldTime < frq.ptime) {
+    fout->validFieldTime = frq.ptime;
+  }
+
+  fout->forecastHour = miTime::hourDiff(fout->validFieldTime, fout->analysisTime);
+
   return fout;
 }
 
