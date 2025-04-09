@@ -627,7 +627,11 @@ Field_p FieldManager::makeField(const FieldRequest& frq)
     fout->validFieldTime = frq.ptime;
   }
 
-  fout->forecastHour = miTime::hourDiff(fout->validFieldTime, fout->analysisTime);
+  if (!fout->analysisTime.undef()) {
+    fout->forecastHour = miTime::hourDiff(fout->validFieldTime, fout->analysisTime);
+  } else {
+    fout->forecastHour = 0;
+  }
 
   return fout;
 }
