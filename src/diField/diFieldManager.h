@@ -99,7 +99,7 @@ public:
   std::set<std::string> getReferenceTimes(const std::string& modelName);
 
   std::string getBestReferenceTime(const std::string& modelName, int refOffset,
-      int refHour);
+      int refHour, int refMinute);
 
   /// read and compute one field
   Field_p makeField(const FieldRequest& fieldrequest);

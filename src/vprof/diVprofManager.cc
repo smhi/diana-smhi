@@ -313,7 +313,7 @@ void VprofManager::applyPlotCommands(const PlotCommand_cpv& vstr)
 
     for (VprofPlotCommand_cp dc : cmd_data) {
       VprofSelectedModel sm;
-      int refhour=-1, refoffset=0;
+      int refhour=-1, refminute=-1, refoffset=0;
       for (const miutil::KeyValue& kv : dc->all()) {
         const std::string& key = kv.key();
         if (key == "model" || key == "obs" || key=="name") {
@@ -322,11 +322,13 @@ void VprofManager::applyPlotCommands(const PlotCommand_cpv& vstr)
           sm.reftime = kv.value();
         } else if (key == "refhour") {
           refhour = kv.toInt();
+        } else if (key == "refminute") {
+          refminute = kv.toInt();
         } else if (key == "refoffset") {
           refoffset = kv.toInt();
         }
       }
-      METLIBS_LOG_DEBUG(LOGVAL(sm.model) << LOGVAL(sm.reftime) << LOGVAL(refhour) << LOGVAL(refoffset));
+      METLIBS_LOG_DEBUG(LOGVAL(sm.model) << LOGVAL(sm.reftime) << LOGVAL(refhour) << LOGVAL(refminute) << LOGVAL(refoffset));
       if (sm.model.empty())
         continue;
       if (sm.reftime.empty()) {
@@ -335,7 +337,7 @@ void VprofManager::applyPlotCommands(const PlotCommand_cpv& vstr)
           if (refhour == -1) {
             sm.reftime = *reftimes.rbegin();
           } else {
-            sm.reftime = ::getBestReferenceTime(reftimes, refoffset, refhour);
+            sm.reftime = ::getBestReferenceTime(reftimes, refoffset, refhour, refminute);
           }
         }
       }

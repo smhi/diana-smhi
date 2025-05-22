@@ -519,7 +519,7 @@ bool FieldManager::addGridCollection(const std::string& gridioType,
 
 gridinventory::Grid FieldManager::getGrid(const std::string& modelName)
 {
-  std::string reftime = getBestReferenceTime(modelName, 0, -1);
+  std::string reftime = getBestReferenceTime(modelName, 0, -1, -1);
   gridinventory::Grid grid;
   GridCollectionPtr pgc = getGridCollection(modelName, reftime);
 
@@ -590,9 +590,9 @@ std::set<std::string> FieldManager::getReferenceTimes(const std::string& modelNa
 }
 
 std::string FieldManager::getBestReferenceTime(const std::string& modelName,
-    int refOffset, int refHour)
+    int refOffset, int refHour, int refMinute)
 {
-  return ::getBestReferenceTime(getReferenceTimes(modelName), refOffset, refHour);
+  return ::getBestReferenceTime(getReferenceTimes(modelName), refOffset, refHour, refMinute);
 }
 
 Field_p FieldManager::makeField(const FieldRequest& frq)

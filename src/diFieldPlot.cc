@@ -473,7 +473,7 @@ void FieldPlot::getDataAnnotations(std::vector<std::string>& annos) const
     }
 
     if (miutil::contains(anno, "$referencetime")) {
-      std::string refString = getAnalysisTime().format("%Y%m%d %H", "", true);
+      std::string refString = getAnalysisTime().format("%Y%m%d %H:%M", "", true);
       miutil::replace(anno, "$referencetime", refString);
     }
     if (miutil::contains(anno, "$forecasthour")) {
@@ -483,7 +483,7 @@ void FieldPlot::getDataAnnotations(std::vector<std::string>& annos) const
     }
     miutil::replace(anno, "$currenttime", fields[0]->timetext);
     if (miutil::contains(anno, "$validtime")) {
-      const std::string vtime = fields[0]->validFieldTime.format("%Y%m%d %A %H" + lg, "", true);
+      const std::string vtime = fields[0]->validFieldTime.format("%Y%m%d %A %H:%M" + lg, "", true);
       miutil::replace(anno, "$validtime", vtime);
     }
     miutil::replace(anno, "$model", fields[0]->modelName);

@@ -42,7 +42,7 @@ bool splitDifferenceCommandString(const miutil::KeyValue_v& pin, miutil::KeyValu
 
 void makeFieldText(Field_p fout, const std::string& plotName, bool flightlevel);
 
-std::string getBestReferenceTime(const std::set<std::string>& refTimes, int refOffset, int refHour);
+std::string getBestReferenceTime(const std::set<std::string>& refTimes, int refOffset, int refHour, int refMinute);
 
 void flightlevel2pressure(FieldRequest& frq);
 

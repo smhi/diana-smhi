@@ -119,7 +119,7 @@ void makeFieldText(Field_p fout, const std::string& plotName, bool flightlevel)
   fout->timetext = timetext;
 }
 
-std::string getBestReferenceTime(const std::set<std::string>& refTimes, int refOffset, int refHour)
+std::string getBestReferenceTime(const std::set<std::string>& refTimes, int refOffset, int refHour, int refMinute)
 {
   if (!refTimes.empty()) {
 
@@ -131,7 +131,11 @@ std::string getBestReferenceTime(const std::set<std::string>& refTimes, int refO
 
     miutil::miTime refTime(last);
 
-    if (refHour > -1) {
+    if ((refHour > -1) && (refMinute > -1)) {
+      miutil::miDate date = refTime.date();
+      miutil::miClock clock(refHour, refMinute, 0);
+      refTime = miutil::miTime(date, clock);
+    } else if ((refHour > -1) && (refMinute == -1)) {
       miutil::miDate date = refTime.date();
       miutil::miClock clock(refHour, 0, 0);
       refTime = miutil::miTime(date, clock);
@@ -145,6 +149,7 @@ std::string getBestReferenceTime(const std::set<std::string>& refTimes, int refO
       return *p;
 
     // referencetime not found. If refHour is given and no refoffset, try yesterday
+    // We dont care for refminute here!
     if (refHour > -1 && refOffset == 0) {
       refTime.addDay(-1);
       p = refTimes.find(refTime.isoTime("T"));

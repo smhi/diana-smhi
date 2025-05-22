@@ -1068,7 +1068,7 @@ bool EditManager::makeNewFile(int fnum, bool local, QString& message)
     fieldPlotManager->addGridCollection(modelName, ofi, true);
 
     FieldPlotGroupInfo_v fgi;
-    std::string reftime = fieldPlotManager->getBestFieldReferenceTime(modelName, 0, -1);
+    std::string reftime = fieldPlotManager->getBestFieldReferenceTime(modelName, 0, -1, -1);
     METLIBS_LOG_INFO(LOGVAL(modelName) << LOGVAL(reftime));
     fieldPlotManager->getFieldPlotGroups(modelName, reftime, true, fgi);
   }

@@ -58,7 +58,7 @@ public:
   int getFieldPlotDimension(const std::vector<std::string>& plotOrParamNames, bool predefinedPlot) override { return 1; }
   void updateFieldReferenceTimes(const std::string& model) override { if (model == MODEL1) fieldReferenceTimeUpdates += 1; }
   std::set<std::string> getFieldReferenceTimes(const std::string& m) override { return fieldReferenceTimes[m]; }
-  std::string getBestFieldReferenceTime(const std::string& m, int ro, int rh) override { return ::getBestReferenceTime(getFieldReferenceTimes(m), ro, rh); }
+  std::string getBestFieldReferenceTime(const std::string& m, int ro, int rh, int rm) override { return ::getBestReferenceTime(getFieldReferenceTimes(m), ro, rh, rm); }
   void getSetupFieldOptions(std::map<std::string, miutil::KeyValue_v>& fieldoptions) override { fieldoptions = setupFieldOptions; }
 
   void getFieldPlotGroups(const std::string& m, const std::string& rt, bool predefinedPlots, FieldPlotGroupInfo_v& vfgi) override;

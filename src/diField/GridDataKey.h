@@ -52,9 +52,10 @@ public:
    std::string elevel;
    int  time_tolerance;
    int refhour;
+   int refminute;
    int refoffset;
    GridDataKey() :
-     time_tolerance(0), refhour(-1), refoffset(0)
+     time_tolerance(0), refhour(-1), refminute(-1), refoffset(0)
    {
    }
 

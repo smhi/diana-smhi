@@ -116,6 +116,7 @@ struct FieldRequest {
   std::string modelName;
   std::string refTime;
   int refhour;
+  int refminute;
   int refoffset;
 
   std::string paramName;

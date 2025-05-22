@@ -56,9 +56,9 @@ int DianaFieldDialogData::getFieldPlotDimension(const std::vector<std::string>& 
   return fpm_->getFieldPlotDimension(plotOrParamNames, predefinedPlot);
 }
 
-std::string DianaFieldDialogData::getBestFieldReferenceTime(const std::string& model, int refOffset, int refHour)
+std::string DianaFieldDialogData::getBestFieldReferenceTime(const std::string& model, int refOffset, int refHour, int refMinute)
 {
-  return fpm_->getBestFieldReferenceTime(model, refOffset, refHour);
+  return fpm_->getBestFieldReferenceTime(model, refOffset, refHour, refMinute);
 }
 
 plottimes_t DianaFieldDialogData::getFieldTime(std::vector<FieldRequest>& request)

@@ -95,6 +95,7 @@ FieldModelInfo::FieldModelInfo(const std::string& mn, const std::string& si)
 
 FieldRequest::FieldRequest()
     : refhour(-1)
+    , refminute(-1)
     , refoffset(0)
     , standard_name(false)
     , predefinedPlot(true)

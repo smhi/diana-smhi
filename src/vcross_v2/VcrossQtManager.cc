@@ -1058,7 +1058,7 @@ void QtManager::selectFields(const std::vector<miutil::KeyValue_v>& to_plot)
     miutil::KeyValue_v poptions;
     std::string model, field;
     vctime_t reftime;
-    int refhour = -1, refoffset = 0;
+    int refhour = -1, refminute = -1, refoffset = 0;
 
     const bool isMarkerLine = (miutil::find(m_p_o, "MARKER") != size_t(-1));
     const bool isReferenceLine = (miutil::find(m_p_o, "REFERENCE") != size_t(-1));
@@ -1094,6 +1094,8 @@ void QtManager::selectFields(const std::vector<miutil::KeyValue_v>& to_plot)
           reftime = vctime_t(kv.value());
         } else if (key == "refhour") {
           refhour = kv.toInt();
+        } else if (key == "refminute") {
+          refminute = kv.toInt();
         } else if (key == "refoffset") {
           refoffset = kv.toInt();
         } else if (key == "elevel") {
@@ -1115,11 +1117,12 @@ void QtManager::selectFields(const std::vector<miutil::KeyValue_v>& to_plot)
         const vctime_v reftimes = getModelReferenceTimes(model);
         if (reftimes.empty())
           METLIBS_LOG_WARN("empty reference time list for model '" << model << "'");
+        // we dont care for refminute
         if (refhour != -1) {
           std::set<std::string> reftimes_txt;
           for (const miutil::miTime& rt : reftimes)
             reftimes_txt.insert(rt.isoTime("T"));
-          const std::string reftime_txt = getBestReferenceTime(reftimes_txt, refoffset, refhour);
+          const std::string reftime_txt = getBestReferenceTime(reftimes_txt, refoffset, refhour, refminute);
           if (!reftime_txt.empty())
             reftime = miutil::miTime(reftime_txt);
         }

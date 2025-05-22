@@ -612,7 +612,7 @@ miTime FieldPlotManager::getFieldReferenceTime(FieldPlotCommand_cp cmd)
   std::vector<std::string> paramNames;
   parseString(cmd, cmd->field, frq, paramNames, plotName);
 
-  const std::string timestr = fieldManager->getBestReferenceTime(frq.modelName, frq.refoffset, frq.refhour);
+  const std::string timestr = fieldManager->getBestReferenceTime(frq.modelName, frq.refoffset, frq.refhour, frq.refminute);
   if (timestr.empty())
     return miTime();
   return miTime(timestr);
@@ -674,7 +674,7 @@ plottimes_t FieldPlotManager::getFieldTime(std::vector<FieldRequest>& request)
 
   for (FieldRequest& frq : request) {
     if (frq.refTime.empty())
-      frq.refTime = ::getBestReferenceTime(fieldManager->getReferenceTimes(frq.modelName), frq.refoffset, frq.refhour);
+      frq.refTime = ::getBestReferenceTime(fieldManager->getReferenceTimes(frq.modelName), frq.refoffset, frq.refhour, frq.refminute);
 
     if (frq.predefinedPlot) {
       std::vector<FieldRequest> fr = getParamNames(frq.paramName, frq);
@@ -751,7 +751,7 @@ bool FieldPlotManager::makeFields(FieldPlotCommand_cp cmd, const FieldPlotComman
 
   for (FieldRequest& fr : vfieldrequest) {
     if (fr.refTime.empty())
-      fr.refTime = ::getBestReferenceTime(fieldManager->getReferenceTimes(fr.modelName), fr.refoffset, fr.refhour);
+      fr.refTime = ::getBestReferenceTime(fieldManager->getReferenceTimes(fr.modelName), fr.refoffset, fr.refhour, fr.refminute);
 
     if (fr.ptime.undef())
       fr.ptime = const_ptime;
@@ -1019,9 +1019,9 @@ void FieldPlotManager::getFieldPlotGroups(const std::string& modelName, const st
 }
 
 
-std::string FieldPlotManager::getBestFieldReferenceTime(const std::string& model, int refOffset, int refHour)
+std::string FieldPlotManager::getBestFieldReferenceTime(const std::string& model, int refOffset, int refHour, int refMinute)
 {
-  return fieldManager->getBestReferenceTime(model, refOffset, refHour);
+  return fieldManager->getBestReferenceTime(model, refOffset, refHour, refMinute);
 }
 
 gridinventory::Grid FieldPlotManager::getFieldGrid(const std::string& model)
@@ -1039,6 +1039,7 @@ void FieldPlotManager::parseString(FieldPlotCommand_cp cmd, const FieldPlotComma
   fieldrequest.refTime = fs.reftime;
   fieldrequest.refoffset = fs.refoffset;
   fieldrequest.refhour = fs.refhour;
+  fieldrequest.refminute = fs.refminute;
   if (fs.isPredefinedPlot()) {
     plotName = fs.plot;
     fieldrequest.predefinedPlot = true;

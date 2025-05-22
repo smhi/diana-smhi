@@ -431,7 +431,7 @@ bool FieldEdit::readEditfield(const std::string& filename)
   const std::string modelName = "SOURCE_" + filename;
   fieldPlotManager->addGridCollection(modelName, filename, false);
 
-  const std::string reftime = fieldPlotManager->getBestFieldReferenceTime(modelName, 0, -1);
+  const std::string reftime = fieldPlotManager->getBestFieldReferenceTime(modelName, 0, -1, -1);
   FieldPlotGroupInfo_v fgi;
   fieldPlotManager->getFieldPlotGroups(modelName, reftime, true, fgi);
 

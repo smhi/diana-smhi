@@ -914,7 +914,7 @@ bool FieldDialog::decodeCommand(FieldPlotCommand_cp cmd, const FieldPlotCommand:
   sf.predefinedPlot = fs.isPredefinedPlot();
   sf.refTime = fs.reftime;
   if (sf.refTime.empty())
-    sf.refTime = m_data->getBestFieldReferenceTime(sf.modelName, fs.refoffset, fs.refhour);
+    sf.refTime = m_data->getBestFieldReferenceTime(sf.modelName, fs.refoffset, fs.refhour, fs.refminute);
 
   sf.zaxis = fs.vcoord;
   sf.level = fs.vlevel;

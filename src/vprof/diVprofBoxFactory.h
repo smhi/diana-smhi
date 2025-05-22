@@ -49,10 +49,10 @@
  * VPROF_GRAPH type=line box=relhum id=vp_relative_humidity
  * VPROF_GRAPH type=line box=ducting id=vp_relative_humidity
  *
- * VPROF_DATA model=meps-det refhour=0 style.colour=blue realization=all/selected/0 \-
+ * VPROF_DATA model=meps-det refhour=0 refminute=0 style.colour=blue realization=all/selected/0 \-
  * TODO: graphs=sigwind,pt.vp_air_temperature_celsius,pt.vp_dew_point_temperature_celsius,wind,vertical_wind
  *
- * VPROF_DATA model=meps-det refhour=12 style.colour=blue realization=5
+ * VPROF_DATA model=meps-det refhour=12 refminute=15 style.colour=blue realization=5
  *
  * VPROF_DATA model=ec refhour=0 style.colour=green realization=all/selected/0 \-
  * SETUP/COMPUTE graph_data=sigwind(dd_wind,ff_wind,sig_wind) \-

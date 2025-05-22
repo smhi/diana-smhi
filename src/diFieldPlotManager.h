@@ -89,8 +89,8 @@ public:
   /// return all field groups for one model/file (to FieldDialog)
   void getFieldPlotGroups(const std::string& modelName, const std::string& refTime, bool predefinedPlots, FieldPlotGroupInfo_v& vfgi);
 
-  ///return referencetime given by refoffset and refhour or last referencetime for given model
-  std::string getBestFieldReferenceTime(const std::string& model, int refOffset, int refHour);
+  ///return referencetime given by refoffset, refhour ond refminute or last referencetime for given model
+  std::string getBestFieldReferenceTime(const std::string& model, int refOffset, int refHour, int refMinute);
 
   ///return grid info from model
   gridinventory::Grid getFieldGrid(const std::string& model);

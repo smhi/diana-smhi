@@ -56,7 +56,7 @@ public:
   virtual int getFieldPlotDimension(const std::vector<std::string>& plotOrParamNames, bool predefinedPlot) = 0;
 
   /// return the reference time given by refOffset and refhour or the last reference time for the given model
-  virtual std::string getBestFieldReferenceTime(const std::string& model, int refOffset, int refHour) = 0;
+  virtual std::string getBestFieldReferenceTime(const std::string& model, int refOffset, int refHour, int refMinute) = 0;
 
   /// update reference times for the given model
   virtual void updateFieldReferenceTimes(const std::string& model) = 0;
