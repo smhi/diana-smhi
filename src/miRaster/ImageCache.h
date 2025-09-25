@@ -41,6 +41,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <string>
 
 class ImageCache
 {
