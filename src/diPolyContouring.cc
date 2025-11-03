@@ -76,7 +76,8 @@ bool DianaLevelSelector::fill(contouring::level_t li) const
 
   if (no_fill)
     return false;
-  if ((have_min && li < level_min) || (have_max && li >= level_max))
+  // li must be able to be level_max for rendering all palette colours.
+  if ((have_min && li < level_min) || (have_max && li > level_max))
     return false;
   if ((skip_fill_0 && li == 0) || (skip_fill_1 && li == 1))
     return false;
@@ -90,6 +91,7 @@ bool DianaLevelSelector::line(contouring::level_t li) const
 
   if (no_lines)
     return false;
+  // FIXME: li >= level_max ?
   if ((have_min && li + 1 < level_min) || (have_max && li >= level_max))
     return false;
   if (skip_line_0 && li == 0)
@@ -392,6 +394,7 @@ void DianaLines::paint_polygons()
   const int ncolours = po.palettecolours.size();
   const int ncolours_cold = po.palettecolours_cold.size();
   const int npatterns = po.patterns.size();
+
   const std::string NOPATTERN;
 
   for (level_points_m::const_iterator it = m_polygons.begin(); it != m_polygons.end(); ++it) {

@@ -1709,13 +1709,15 @@ bool FieldRenderer::plotContour2(DiGLPainter* gl, PlotOrder zorder)
   // convert gridpoints to correct projection
   GridPoints gp;
   if (!getGridPoints(gp)) {
-    METLIBS_LOG_INFO("getGridPoints problem");
+    METLIBS_LOG_ERROR("getGridPoints problem");
     return false;
   }
   const float *x = gp.x(), *y = gp.y();
 
-  if (gp.ix1 >= gp.ix2 || gp.iy1 >= gp.iy2)
+  if (gp.ix1 >= gp.ix2 || gp.iy1 >= gp.iy2) {
+    METLIBS_LOG_ERROR("getGridPoints problem, gp.ix1 >= gp.ix2 || gp.iy1 >= gp.iy2");
     return false;
+  }
   const int nx = fields_[0]->area.nx;
   const int ny = fields_[0]->area.ny;
   if (gp.ix1 >= nx || gp.ix2 < 0 || gp.iy1 >= ny || gp.iy2 < 0)
@@ -2371,7 +2373,8 @@ bool FieldRenderer::plotNumbers(DiGLPainter* gl)
   float dist;
   setAutoStep(x, y, gp.ix1, gp.ix2, gp.iy1, gp.iy2, 25, autostep, dist);
   if (autostep > 1)
-    return false;
+    // No need to return false if the model have been zoomed out.
+    return true;
 
   gp.ix2++;
   gp.iy2++;
