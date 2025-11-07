@@ -58,6 +58,8 @@ struct dihead
   unsigned int zsize;
   unsigned int xsize;
   unsigned int ysize;
+  unsigned int xsize_org;
+  unsigned int ysize_org;
   Projection projection;
   float Ax; ///< === Sat::area.resolutionX
   float Ay; ///< === Sat::area.resolutionY

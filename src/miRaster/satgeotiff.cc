@@ -134,9 +134,10 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
   tsample_t samplesperpixel;
   TIFFGetField(in.get(), TIFFTAG_SAMPLESPERPIXEL, &samplesperpixel);
 
+  const auto org_size = ginfo.xsize_org * ginfo.ysize_org;
   const auto size = ginfo.xsize * ginfo.ysize;
 
-  uint32 count;
+  uint32_t count;
   void* data;
   // TIFFTAG_GDAL_METADATA 42112 defined in some projets
   // see https://www.awaresystems.be/imaging/tiff/tifftags/gdal_metadata.html
@@ -182,8 +183,8 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
         tileLength = 0;
       }
 
-      uint32 y;
-      uint32 x;
+      uint32_t y;
+      uint32_t x;
       for (y = 0; y < imageLength; y += tileLength) {
         for (x = 0; x < imageWidth; x += tileWidth) {
           auto res = TIFFReadTile(in.get(), buf, x, y, 0, -1);
@@ -218,8 +219,19 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
 
   // RGBA buffer
   // causes alloc-dealloc mismatch at any delete[] :) with image_rgba_ @ disat 371.
-  image[0] = (unsigned char*)malloc((size)*4);
-  memset(image[0], 0, size * 4);
+  // Check if size and org_size is equal.
+  image[0] = (unsigned char*)malloc((size)*samplesperpixel);
+  memset(image[0], 0, size * samplesperpixel);
+
+  //alloc read buffer if needed
+  unsigned char * read_buffer = NULL;
+
+  if (size != org_size) {
+    // Imagewidth/height is probably not an even multiple of tilewidth/height.
+    read_buffer = (unsigned char*)malloc((org_size)*samplesperpixel);
+    memset(read_buffer,0,org_size * samplesperpixel);
+  }
+
   // image[0] = new unsigned char[size * 4];
   // image[0] = nullptr;
 
@@ -227,9 +239,43 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
   ImageCache* mImageCache = ImageCache::getInstance();
 
   if (!mImageCache->getFromCache(file, (uint8_t*)image[0])) {
-    if (TIFFReadRGBAImageOriented(in.get(), ginfo.xsize, ginfo.ysize, (uint32*)image[0]) == 0) {
-      METLIBS_LOG_ERROR("TIFFReadRGBAImageOriented (ORIENTATION_BOTLEFT) failed: size " << ginfo.xsize << "," << ginfo.ysize);
+    if (read_buffer != NULL) {
+      if (TIFFReadRGBAImageOriented(in.get(), ginfo.xsize_org, ginfo.ysize_org, (uint32_t*)read_buffer) == 0) {
+        METLIBS_LOG_ERROR("TIFFReadRGBAImageOriented (ORIENTATION_BOTLEFT) failed: size " << ginfo.xsize_org << "," << ginfo.ysize_org);
+      }
+    } else {
+      if (TIFFReadRGBAImageOriented(in.get(), ginfo.xsize, ginfo.ysize, (uint32_t*)image[0]) == 0) {
+        METLIBS_LOG_ERROR("TIFFReadRGBAImageOriented (ORIENTATION_BOTLEFT) failed: size " << ginfo.xsize << "," << ginfo.ysize);
+      }
     }
+    // Copy read_buffer to image[0]
+    if (read_buffer != NULL) {
+      // Offset between read_buffer and image[0] in y-direction
+      int y_offset = ginfo.ysize - ginfo.ysize_org;
+      for (int y = 0; y < ginfo.ysize_org; y++) {
+        // Copy one band at a time.
+        for (int x = 0; x < ginfo.xsize_org*samplesperpixel; x+=ginfo.xsize_org*samplesperpixel) {
+          // index to data in read buffer array
+          int index_read = x + y* ginfo.xsize_org*samplesperpixel;
+          int xr = x;
+          if (xr == ginfo.xsize_org*samplesperpixel - 1) {
+            // Place at end of write buffer x.
+            xr = ginfo.xsize - 1;
+          }
+          // Where to write in image[0].
+          int index_image = xr + (y+y_offset)*ginfo.xsize*samplesperpixel;
+          if (index_image >= size*samplesperpixel || index_read >= org_size*samplesperpixel)
+          {
+            METLIBS_LOG_ERROR("Index out of bounds: " << index_image << " size: " << size*samplesperpixel << "," << index_read << " org_size: " << org_size*samplesperpixel << "\n");
+            break;
+          }
+          //Copy one band at a time in X-direction.
+          memcpy(&image[0][index_image], &read_buffer[index_read], ginfo.xsize_org*samplesperpixel);
+        }
+      }
+      METLIBS_LOG_DEBUG("size: " << size*samplesperpixel << "," << " org_size: " << org_size*samplesperpixel << "\n");
+    }
+
     // GDAL_NODATA, see https://www.awaresystems.be/imaging/tiff/tifftags/gdal_nodata.html
     // Used by the GDAL library, contains an ASCII encoded nodata or background pixel value.
     if (samplesperpixel == 1 && TIFFGetField(in.get(), /* GDAL_NODATA */ 42113, &count, &data) && count > 0) {
@@ -243,6 +289,9 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
       }
     }
     mImageCache->putInCache(file, (uint8_t*)image[0], size * 4);
+  }
+  if (read_buffer != NULL) {
+    free(read_buffer);
   }
   return (pal);
 }
@@ -329,7 +378,7 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead& ginfo)
   double x_scale;
 
   // Geospecific Tags
-  uint32 transmatrix_size = 0;
+  uint32_t transmatrix_size = 0;
   double* transmatrix = nullptr;
   const bool have_transmatrix =
       (TIFFGetField(in.get(), GTIFF_TRANSMATRIX, &transmatrix_size, &transmatrix) == 1) && (transmatrix_size == 16) && (transmatrix != nullptr);
@@ -343,23 +392,23 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead& ginfo)
       METLIBS_LOG_WARN("only the linear part of GTIFF_TRANSMATRIX is supported in '" << infile << "'");
     }
   } else { // !have_transmatrix
-    uint32 tiepointsize = 0;
+    uint32_t tiepointsize = 0;
     double* tiepoints = nullptr; //[6];
     const bool have_tiepoints = (TIFFGetField(in.get(), TIFFTAG_GEOTIEPOINTS, &tiepointsize, &tiepoints) == 1) && (tiepointsize >= 6) && (tiepoints != nullptr);
 
-    uint32 pixscalesize = 0;
+    uint32_t pixscalesize = 0;
     double* pixscale = nullptr; //[3];
     const bool have_pixelscale = (TIFFGetField(in.get(), TIFFTAG_GEOPIXELSCALE, &pixscalesize, &pixscale) == 1) && (pixscalesize == 3) && (pixscale != nullptr);
 
     if (METLIBS_LOG_DEBUG_ENABLED()) {
       METLIBS_LOG_DEBUG("tiepointsize: " << tiepointsize);
       if (tiepoints != nullptr) {
-        for (uint32 i = 0; i < tiepointsize; i++)
+        for (uint32_t i = 0; i < tiepointsize; i++)
           METLIBS_LOG_DEBUG("tiepoints[" << i << "]=" << tiepoints[i]);
       }
       METLIBS_LOG_DEBUG("pixscalesize: " << pixscalesize);
       if (pixscale != nullptr) {
-        for (uint32 i = 0; i < pixscalesize; i++)
+        for (uint32_t i = 0; i < pixscalesize; i++)
           METLIBS_LOG_DEBUG("pixscale[" << i << "]=" << pixscale[i]);
       }
     }
@@ -604,10 +653,10 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead& ginfo)
   ginfo.Ax = x_scale * unit_scale_factor;
   ginfo.Ay = y_scale * unit_scale_factor;
 
-  if (TIFFGetField(in.get(), TIFFTAG_IMAGEWIDTH, &ginfo.xsize) == 0) {
+  if (TIFFGetField(in.get(), TIFFTAG_IMAGEWIDTH, &ginfo.xsize_org) == 0) {
     METLIBS_LOG_DEBUG("No TIFFTAG_IMAGEWIDTH");
   }
-  if (TIFFGetField(in.get(), TIFFTAG_IMAGELENGTH, &ginfo.ysize) == 0) {
+  if (TIFFGetField(in.get(), TIFFTAG_IMAGELENGTH, &ginfo.ysize_org) == 0) {
     METLIBS_LOG_DEBUG("No TIFFTAG_IMAGELENGTH");
   }
 
@@ -623,13 +672,15 @@ int metno::GeoTiff::head_diana(const std::string& infile, dihead& ginfo)
     METLIBS_LOG_DEBUG("No TIFFTAG_TILELENGTH");
     tileLength = 0;
   }
+  ginfo.xsize = ginfo.xsize_org;
+  ginfo.ysize = ginfo.ysize_org;
 
   if (tileWidth != 0 && tileLength != 0) {
-    tilesAcross = (ginfo.xsize + (tileWidth - 1)) / tileWidth;
-    tilesDown = (ginfo.ysize + (tileLength - 1)) / tileLength;
-    if (tilesAcross * tileWidth > ginfo.xsize)
+    tilesAcross = (ginfo.xsize_org + (tileWidth - 1)) / tileWidth;
+    tilesDown = (ginfo.ysize_org + (tileLength - 1)) / tileLength;
+    if (tilesAcross * tileWidth > ginfo.xsize_org)
       ginfo.xsize = tilesAcross * tileWidth;
-    if (tilesDown * tileLength > ginfo.ysize)
+    if (tilesDown * tileLength > ginfo.ysize_org)
       ginfo.ysize = tilesDown * tileLength;
   }
 
