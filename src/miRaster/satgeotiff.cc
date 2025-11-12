@@ -131,7 +131,11 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
     return -1;
   }
 
-  tsample_t samplesperpixel;
+  tsample_t samplesperpixel, samplesperpixel_rgba;
+
+  // When reading RGBA samplesperpixel is always 4.
+  samplesperpixel_rgba = 4;
+
   TIFFGetField(in.get(), TIFFTAG_SAMPLESPERPIXEL, &samplesperpixel);
 
   const auto org_size = ginfo.xsize_org * ginfo.ysize_org;
@@ -220,16 +224,16 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
   // RGBA buffer
   // causes alloc-dealloc mismatch at any delete[] :) with image_rgba_ @ disat 371.
   // Check if size and org_size is equal.
-  image[0] = (unsigned char*)malloc((size)*samplesperpixel);
-  memset(image[0], 0, size * samplesperpixel);
+  image[0] = (unsigned char*)malloc((size)*samplesperpixel_rgba);
+  memset(image[0], 0, size * samplesperpixel_rgba);
 
   //alloc read buffer if needed
   unsigned char * read_buffer = NULL;
 
   if (size != org_size) {
     // Imagewidth/height is probably not an even multiple of tilewidth/height.
-    read_buffer = (unsigned char*)malloc((org_size)*samplesperpixel);
-    memset(read_buffer,0,org_size * samplesperpixel);
+    read_buffer = (unsigned char*)malloc((org_size)*samplesperpixel_rgba);
+    memset(read_buffer,0,org_size * samplesperpixel_rgba);
   }
 
   // image[0] = new unsigned char[size * 4];
@@ -254,26 +258,26 @@ int metno::GeoTiff::read_diana(const std::string& infile, unsigned char* image[]
       int y_offset = ginfo.ysize - ginfo.ysize_org;
       for (int y = 0; y < ginfo.ysize_org; y++) {
         // Copy one band at a time.
-        for (int x = 0; x < ginfo.xsize_org*samplesperpixel; x+=ginfo.xsize_org*samplesperpixel) {
+        for (int x = 0; x < ginfo.xsize_org*samplesperpixel_rgba; x+=ginfo.xsize_org*samplesperpixel_rgba) {
           // index to data in read buffer array
-          int index_read = x + y* ginfo.xsize_org*samplesperpixel;
+          int index_read = x + y* ginfo.xsize_org*samplesperpixel_rgba;
           int xr = x;
-          if (xr == ginfo.xsize_org*samplesperpixel - 1) {
+          if (xr == ginfo.xsize_org*samplesperpixel_rgba - 1) {
             // Place at end of write buffer x.
             xr = ginfo.xsize - 1;
           }
           // Where to write in image[0].
-          int index_image = xr + (y+y_offset)*ginfo.xsize*samplesperpixel;
-          if (index_image >= size*samplesperpixel || index_read >= org_size*samplesperpixel)
+          int index_image = xr + (y+y_offset)*ginfo.xsize*samplesperpixel_rgba;
+          if (index_image >= size*samplesperpixel_rgba || index_read >= org_size*samplesperpixel_rgba)
           {
-            METLIBS_LOG_ERROR("Index out of bounds: " << index_image << " size: " << size*samplesperpixel << "," << index_read << " org_size: " << org_size*samplesperpixel << "\n");
+            METLIBS_LOG_ERROR("Index out of bounds: " << index_image << " size: " << size*samplesperpixel_rgba << "," << index_read << " org_size: " << org_size*samplesperpixel_rgba << "\n");
             break;
           }
           //Copy one band at a time in X-direction.
-          memcpy(&image[0][index_image], &read_buffer[index_read], ginfo.xsize_org*samplesperpixel);
+          memcpy(&image[0][index_image], &read_buffer[index_read], ginfo.xsize_org*samplesperpixel_rgba);
         }
       }
-      METLIBS_LOG_DEBUG("size: " << size*samplesperpixel << "," << " org_size: " << org_size*samplesperpixel << "\n");
+      METLIBS_LOG_DEBUG("size: " << size*samplesperpixel_rgba << "," << " org_size: " << org_size*samplesperpixel_rgba << "\n");
     }
 
     // GDAL_NODATA, see https://www.awaresystems.be/imaging/tiff/tifftags/gdal_nodata.html
