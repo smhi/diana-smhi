@@ -3025,12 +3025,11 @@ void ObsPlot::checkAccumulationTime(size_t index)
   int hour = obsTime.hour();
   const float* pRRR;
   if ((hour == 6 || hour == 18) && (pRRR = obsp.get_float(index, "RRR_12"))) {
-
     obsp.put_float(index, "RRR", *pRRR);
-
+  } else if ((hour == 6 || hour == 18) && (pRRR = obsp.get_float(index, "RRR_24"))) {
+    obsp.put_float(index, "RRR", *pRRR);
   } else if ((hour == 0 || hour == 12) && (pRRR = obsp.get_float(index, "RRR_6"))) {
     obsp.put_float(index, "RRR", *pRRR);
-
   } else if ((pRRR = obsp.get_float(index, "RRR_1"))) {
     obsp.put_float(index, "RRR", *pRRR);
   }

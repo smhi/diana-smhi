@@ -885,6 +885,7 @@ PlotOptions& PlotOptions::set_colours(const std::string& value)
 
 PlotOptions& PlotOptions::set_palettecolours(const std::string& value)
 {
+  // FIXME: Take special care of off_value
   palettecolours.clear();
   palettecolours_cold.clear();
   if (!is_off(value)) {
@@ -924,6 +925,7 @@ PlotOptions& PlotOptions::set_palettecolours(const std::string& value)
     }
   } else {
     palettename.clear();
+    palettename = value;
     if (patternname.empty())
       contourShading = false;
   }
@@ -932,6 +934,7 @@ PlotOptions& PlotOptions::set_palettecolours(const std::string& value)
 
 PlotOptions& PlotOptions::set_patterns(const std::string& value)
 {
+  // FIXME: Take special care of off_value
   if (!is_off(value)) {
     patternname = value;
     contourShading = true;
@@ -942,6 +945,7 @@ PlotOptions& PlotOptions::set_patterns(const std::string& value)
     }
   } else {
     patternname.clear();
+    patternname = value;
     patterns.clear();
     if (palettename.empty())
       contourShading = false;
