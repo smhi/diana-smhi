@@ -333,7 +333,8 @@ void PlotModule::setAnnotations()
 
   for (AnnotationPlot* ap : vap) {
     ap->setData(annotations, fieldAnalysisTimes);
-    ap->setfillcolour(staticPlot_->getBackgroundColour());
+    // Use poptions.fillcolour instead, NOTE: Default must be specified in setup file.
+    // ap->setfillcolour(staticPlot_->getBackgroundColour());
   }
 
   //annotations from data
