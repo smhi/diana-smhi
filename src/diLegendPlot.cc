@@ -192,7 +192,9 @@ bool LegendPlot::plotLegend(DiGLPainter* gl, float x, float y)
 
   //draw title background
   if (!vtitlestring.empty()) {
-    gl->setColour(poptions.fillcolour, false);
+    gl->Enable(DiGLPainter::gl_BLEND);
+    gl->BlendFunc(DiGLPainter::gl_SRC_ALPHA, DiGLPainter::gl_ONE_MINUS_SRC_ALPHA);
+    gl->setColour(poptions.fillcolour);
     gl->drawRect(true, x1title, y2title, x2title, y1title);
 
     //draw title
@@ -209,6 +211,7 @@ bool LegendPlot::plotLegend(DiGLPainter* gl, float x, float y)
   gl->BlendFunc(DiGLPainter::gl_SRC_ALPHA, DiGLPainter::gl_ONE_MINUS_SRC_ALPHA);
   gl->setColour(poptions.fillcolour);
   gl->drawRect(true, x1table, y1table, x2table, y1title);
+  gl->Disable(DiGLPainter::gl_BLEND);
 
   // draw table
   float x1box = x1table + xborder;
