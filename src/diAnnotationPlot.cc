@@ -46,6 +46,7 @@
 #include <boost/range/adaptor/reversed.hpp>
 #include <cmath>
 #include <sstream>
+#include <iostream>
 
 #define MILOGGER_CATEGORY "diana.AnnotationPlot"
 #include <miLogger/miLogging.h>
@@ -145,8 +146,12 @@ const std::vector<std::string> AnnotationPlot::expanded(const std::vector<std::s
 
 void AnnotationPlot::setfillcolour(const Colour& c)
 {
-  if (atype == anno_data)
-    poptions.fillcolour = c;
+  if (atype == anno_data) {
+    /* Check for default colour */
+    if (poptions.fillcolour == Colour::BLACK) {
+      poptions.fillcolour = c;
+    }
+  }
 }
 
 bool AnnotationPlot::prepare(const PlotCommand_cp& pc)
@@ -170,7 +175,6 @@ bool AnnotationPlot::prepare(const PlotCommand_cp& pc)
   cxratio = 0;
   cyratio = 0;
   useAnaTime = false;
-
   for (const miutil::KeyValue& kv : ooptions) {
     const std::string& key = kv.key();
     const std::string& value = kv.value();
