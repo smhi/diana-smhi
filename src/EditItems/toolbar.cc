@@ -470,6 +470,27 @@ void ToolBar::show_hide_all()
   setVisible(show);
 }
 
+void ToolBar::showComposites(bool visible)
+{
+  compositeWidget_->setVisible(visible);
+}
+
+void ToolBar::showPolyLines(bool visible)
+{
+  polyLineWidget->setVisible(visible);
+}
+
+void ToolBar::showSymbols(bool visible)
+{
+  symbolWidget->setVisible(visible);
+}
+
+void ToolBar::showTexts(bool visible)
+{
+  textWidget->setVisible(visible);
+}
+
+
 void ToolBar::setVisible(bool visible)
 {
   QToolBar::setVisible(visible);

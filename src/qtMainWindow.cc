@@ -1520,6 +1520,22 @@ void DianaMainWindow::onVcrossRequestEditManager(bool on, bool timeGraph)
 
     setEditDrawingMode(true);
     vcrossEditManagerEnableSignals();
+
+    if (timeGraph) {
+      EditItems::ToolBar::instance(this)->showSymbols(true);
+
+      EditItems::ToolBar::instance(this)->showComposites(false);
+      EditItems::ToolBar::instance(this)->showPolyLines(false);
+      EditItems::ToolBar::instance(this)->showTexts(false);
+    }
+    else {
+      EditItems::ToolBar::instance(this)->showPolyLines(true);
+
+      EditItems::ToolBar::instance(this)->showSymbols(false);
+      EditItems::ToolBar::instance(this)->showComposites(false);
+      EditItems::ToolBar::instance(this)->showTexts(false);
+    }
+
   } else {
     setEditDrawingMode(false);
   }

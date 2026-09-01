@@ -58,6 +58,12 @@ class ToolBar : public QToolBar
 public:
   static ToolBar *instance(QWidget * parent);
   void setVisible(bool visible) override;
+  // Simplify for cross sections
+  void showComposites(bool visible);
+  void showPolyLines(bool visible);
+  void showSymbols(bool visible);
+  void showTexts(bool visible);
+
 
 public Q_SLOTS:
   void setSelectAction();
