@@ -186,6 +186,7 @@ QNetworkReply* WebMapWMS::submitRequest(WebMapWMSLayer_cx layer, const std::map<
   urlq.addQueryItem("FORMAT", diutil::sq(tileFormat()));
   urlq.addQueryItem("WIDTH", QString::number(TILESIZE));
   urlq.addQueryItem("HEIGHT", QString::number(TILESIZE));
+  urlq.addQueryItem("STYLES", "");
 
   for (size_t d = 0; d<layer->countDimensions(); ++d) {
     const WebMapDimension& dim = layer->dimension(d);
